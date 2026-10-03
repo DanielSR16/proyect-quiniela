@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Inter", "system-ui", "sans-serif";
+  --font-body: "Inter", "system-ui", "sans-serif";
+
+  /* Colores primarios */
+  --color-primary-50: oklch(0.97 0.04 250);
+  --color-primary-100: oklch(0.94 0.08 250);
+  --color-primary-200: oklch(0.88 0.15 250);
+  --color-primary-300: oklch(0.82 0.21 250);
+  --color-primary-400: oklch(0.71 0.26 250);
+  --color-primary-500: oklch(0.62 0.28 250);
+  --color-primary-600: oklch(0.55 0.26 250);
+  --color-primary-700: oklch(0.47 0.23 250);
+  --color-primary-800: oklch(0.42 0.20 250);
+  --color-primary-900: oklch(0.37 0.17 250);
+
+  /* Colores de éxito */
+  --color-success-500: oklch(0.71 0.18 142);
+  --color-success-600: oklch(0.64 0.16 142);
+
+  /* Colores de error */
+  --color-error-500: oklch(0.63 0.26 29);
+  --color-error-600: oklch(0.57 0.24 29);
+
+  /* Breakpoints personalizados */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-50;
+  }
+
+  h1 {
+    @apply text-3xl font-bold tracking-tight;
+  }
+
+  h2 {
+    @apply text-2xl font-bold tracking-tight;
+  }
+
+  h3 {
+    @apply text-xl font-semibold;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-primary-500 text-white hover:bg-primary-600 active:bg-primary-700;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-600;
+  }
+
+  .card {
+    @apply rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900;
+  }
+
+  .input {
+    @apply rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 placeholder-gray-500 transition-colors duration-200 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:placeholder-gray-400;
+  }
+
+  .container-fluid {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+}
