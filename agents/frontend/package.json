@@ -1,0 +1,14 @@
+{
+  "name": "@agents/frontend",
+  "version": "1.0.0",
+  "description": "Generic frontend agent for React and Vue projects",
+  "type": "module",
+  "exports": "./agent.js",
+  "scripts": {
+    "start": "node agent.js",
+    "test": "node test.js"
+  },
+  "keywords": ["agent", "frontend", "react", "vue", "ui"],
+  "author": "daniel",
+  "license": "MIT"
+}

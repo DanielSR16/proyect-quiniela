@@ -1,0 +1,14 @@
+{
+  "name": "@agents/backend",
+  "version": "1.0.0",
+  "description": "Generic backend agent for Node.js projects",
+  "type": "module",
+  "exports": "./agent.js",
+  "scripts": {
+    "start": "node agent.js",
+    "test": "node test.js"
+  },
+  "keywords": ["agent", "backend", "api", "nodejs"],
+  "author": "daniel",
+  "license": "MIT"
+}

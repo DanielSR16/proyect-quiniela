@@ -1,0 +1,24 @@
+{
+  "name": "quiniela",
+  "version": "1.0.0",
+  "description": "Proyecto Quiniela - Full Stack con Agentes Personalizados",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run dev -w backend & npm run dev -w frontend",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "test": "npm test -w backend && npm test -w frontend"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "keywords": [
+    "api",
+    "express",
+    "react",
+    "fullstack"
+  ],
+  "author": "Daniel San Román",
+  "license": "MIT"
+}
