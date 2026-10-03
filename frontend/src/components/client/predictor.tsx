@@ -52,9 +52,9 @@ export function Predictor({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-start gap-4">
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start sm:gap-4">
         <Contador equipo={local} valor={golesLocal} onChange={(v) => { setGolesLocal(v); setGuardado(false); }} />
-        <span className="pt-10 text-2xl font-bold text-ink/70">vs</span>
+        <span className="text-2xl font-bold text-ink/70 sm:pt-10">vs</span>
         <Contador equipo={visitante} valor={golesVisitante} onChange={(v) => { setGolesVisitante(v); setGuardado(false); }} />
       </div>
       <button

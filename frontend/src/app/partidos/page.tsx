@@ -19,7 +19,7 @@ export default function PartidosPage() {
             key={p.id}
             className="rounded-md border-2 border-line bg-card p-6"
           >
-            <p className="mb-5 text-lg font-semibold capitalize text-primary-600">
+            <p className="mb-5 text-lg font-semibold first-letter:uppercase text-primary-600">
               {formatearHora(p.horaPartido)}
             </p>
             <Predictor

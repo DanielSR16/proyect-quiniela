@@ -1,7 +1,7 @@
 import { formatearHora, partidos } from "@/lib/mock-data";
 
 const inputClase =
-  "w-full rounded-md border-2 border-line px-4 py-3 text-xl focus:border-primary-500 focus:outline-none";
+  "block w-full min-w-0 rounded-md border-2 border-line px-4 py-3 text-xl focus:border-primary-500 focus:outline-none";
 
 export default function AdminPage() {
   return (
@@ -10,7 +10,7 @@ export default function AdminPage() {
 
       <section className="rounded-md border-2 border-line bg-card p-6">
         <h2 className="mb-5 text-3xl font-bold">Agregar partido</h2>
-        <form className="grid gap-5 sm:grid-cols-2">
+        <form className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label htmlFor="local" className="mb-2 block text-xl font-semibold">Equipo local</label>
             <input id="local" className={inputClase} />
@@ -44,11 +44,11 @@ export default function AdminPage() {
             >
               <div>
                 <p className="text-2xl font-bold">{p.local} vs {p.visitante}</p>
-                <p className="text-lg capitalize text-ink/70">
+                <p className="text-lg first-letter:uppercase text-ink/70">
                   {formatearHora(p.horaPartido)}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <input aria-label={`Goles ${p.local}`} type="number" min={0} defaultValue={p.resultadoLocal ?? ""} className="w-20 rounded-md border-2 border-line px-3 py-3 text-center text-2xl" />
                 <span className="text-2xl font-bold">-</span>
                 <input aria-label={`Goles ${p.visitante}`} type="number" min={0} defaultValue={p.resultadoVisitante ?? ""} className="w-20 rounded-md border-2 border-line px-3 py-3 text-center text-2xl" />
