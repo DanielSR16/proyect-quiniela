@@ -18,7 +18,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <h1 className="text-4xl font-bold">Mi puntuación</h1>
 
-      <div className="rounded-2xl bg-primary-600 p-8 text-center text-white">
+      <div className="rounded-md bg-primary-600 p-8 text-center text-white">
         <p className="text-xl">Tus puntos totales</p>
         <p className="text-7xl font-bold">{total}</p>
       </div>
@@ -29,7 +29,7 @@ export default function DashboardPage() {
           {historial.map(({ pred, partido, real, puntos }) => (
             <li
               key={partido.id}
-              className="rounded-2xl border-2 border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900"
+              className="rounded-md border-2 border-line bg-card p-6"
             >
               <p className="text-2xl font-bold">
                 {partido.local} vs {partido.visitante}
@@ -41,7 +41,7 @@ export default function DashboardPage() {
                 Tu predicción: <strong>{pred.local} - {pred.visitante}</strong>
               </p>
               <p
-                className={`mt-3 inline-block rounded-xl px-4 py-2 text-xl font-bold ${
+                className={`mt-3 inline-block rounded-md px-4 py-2 text-xl font-bold ${
                   puntos === 5
                     ? "bg-green-100 text-green-800"
                     : puntos === 3

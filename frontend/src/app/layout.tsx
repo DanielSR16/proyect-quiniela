@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Playfair_Display, Source_Sans_3 } from "next/font/google";
 import "@/styles/app.css";
+
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
+const source = Source_Sans_3({ subsets: ["latin"], variable: "--font-source" });
 
 export const metadata: Metadata = {
   title: "Quiniela Liga MX",
@@ -11,56 +15,39 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const enlaces = [
+  ["/", "Inicio"],
+  ["/partidos", "Partidos"],
+  ["/dashboard", "Mis puntos"],
+  ["/ranking", "Ranking"],
+  ["/admin", "Admin"],
+  ["/login", "Entrar"],
+];
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
+    <html lang="es" className={`${playfair.variable} ${source.variable}`}>
       <body>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-          {/* Header */}
-          <header className="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-            <div className="container-fluid flex items-center justify-between py-4">
-              <div className="text-2xl font-bold text-primary-600">
-                ⚽ Quiniela
-              </div>
-              <nav className="flex flex-wrap gap-x-6 gap-y-2 text-lg font-semibold">
-                {[
-                  ["/", "Inicio"],
-                  ["/partidos", "Partidos"],
-                  ["/dashboard", "Mis puntos"],
-                  ["/ranking", "Ranking"],
-                  ["/admin", "Admin"],
-                  ["/login", "Entrar"],
-                ].map(([href, label]) => (
-                  <a
-                    key={href}
-                    href={href}
-                    className="text-gray-700 hover:text-primary-600 dark:text-gray-300"
-                  >
-                    {label}
-                  </a>
-                ))}
-              </nav>
-            </div>
-          </header>
+        <header className="border-b-4 border-gold-500 bg-primary-600 text-card">
+          <div className="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <a href="/" className="font-display text-3xl font-bold">
+              Quiniela <span className="text-gold-400">Liga MX</span>
+            </a>
+            <nav className="flex flex-wrap gap-x-6 gap-y-1 text-lg font-semibold">
+              {enlaces.map(([href, label]) => (
+                <a key={href} href={href} className="hover:text-gold-400">
+                  {label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </header>
 
-          {/* Main Content */}
-          <main className="container-fluid py-12">{children}</main>
+        <main className="mx-auto max-w-5xl px-5 py-10">{children}</main>
 
-          {/* Footer */}
-          <footer className="border-t border-gray-200 bg-white py-8 dark:border-gray-800 dark:bg-gray-900">
-            <div className="container-fluid text-center text-sm text-gray-600 dark:text-gray-400">
-              <p>© 2026 Quiniela. Todos los derechos reservados.</p>
-            </div>
-          </footer>
-        </div>
+        <footer className="border-t border-line py-6 text-center text-base text-ink/70">
+          Quiniela Liga MX · 2026
+        </footer>
       </body>
     </html>
   );

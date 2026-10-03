@@ -1,14 +1,14 @@
 import { formatearHora, partidos } from "@/lib/mock-data";
 
 const inputClase =
-  "w-full rounded-xl border-2 border-gray-300 px-4 py-3 text-xl focus:border-primary-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800";
+  "w-full rounded-md border-2 border-line px-4 py-3 text-xl focus:border-primary-500 focus:outline-none";
 
 export default function AdminPage() {
   return (
     <div className="space-y-10">
       <h1 className="text-4xl font-bold">Administración</h1>
 
-      <section className="rounded-2xl border-2 border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
+      <section className="rounded-md border-2 border-line bg-card p-6">
         <h2 className="mb-5 text-3xl font-bold">Agregar partido</h2>
         <form className="grid gap-5 sm:grid-cols-2">
           <div>
@@ -27,7 +27,7 @@ export default function AdminPage() {
           </div>
           <button
             type="submit"
-            className="rounded-xl bg-primary-600 px-6 py-4 text-xl font-bold text-white hover:bg-primary-700 sm:col-span-2"
+            className="rounded-md bg-primary-600 px-6 py-4 text-xl font-bold text-white hover:bg-primary-700 sm:col-span-2"
           >
             Agregar partido
           </button>
@@ -40,19 +40,19 @@ export default function AdminPage() {
           {partidos.map((p) => (
             <li
               key={p.id}
-              className="flex flex-col gap-4 rounded-2xl border-2 border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-4 rounded-md border-2 border-line bg-card p-6 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
                 <p className="text-2xl font-bold">{p.local} vs {p.visitante}</p>
-                <p className="text-lg capitalize text-gray-600 dark:text-gray-400">
+                <p className="text-lg capitalize text-ink/70">
                   {formatearHora(p.horaPartido)}
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <input aria-label={`Goles ${p.local}`} type="number" min={0} defaultValue={p.resultadoLocal ?? ""} className="w-20 rounded-xl border-2 border-gray-300 px-3 py-3 text-center text-2xl dark:border-gray-600 dark:bg-gray-800" />
+                <input aria-label={`Goles ${p.local}`} type="number" min={0} defaultValue={p.resultadoLocal ?? ""} className="w-20 rounded-md border-2 border-line px-3 py-3 text-center text-2xl" />
                 <span className="text-2xl font-bold">-</span>
-                <input aria-label={`Goles ${p.visitante}`} type="number" min={0} defaultValue={p.resultadoVisitante ?? ""} className="w-20 rounded-xl border-2 border-gray-300 px-3 py-3 text-center text-2xl dark:border-gray-600 dark:bg-gray-800" />
-                <button type="button" className="rounded-xl bg-green-600 px-5 py-3 text-xl font-bold text-white hover:bg-green-700">
+                <input aria-label={`Goles ${p.visitante}`} type="number" min={0} defaultValue={p.resultadoVisitante ?? ""} className="w-20 rounded-md border-2 border-line px-3 py-3 text-center text-2xl" />
+                <button type="button" className="rounded-md bg-primary-600 px-5 py-3 text-xl font-bold text-white hover:bg-primary-700">
                   Guardar
                 </button>
               </div>

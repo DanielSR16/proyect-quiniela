@@ -8,7 +8,7 @@ export default function PartidosPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-4xl font-bold">Próximos partidos</h1>
-        <p className="mt-2 text-xl text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-xl text-ink/70">
           Puedes cambiar tu predicción hasta la hora del partido.
         </p>
       </div>
@@ -17,7 +17,7 @@ export default function PartidosPage() {
         {proximos.map((p) => (
           <article
             key={p.id}
-            className="rounded-2xl border-2 border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900"
+            className="rounded-md border-2 border-line bg-card p-6"
           >
             <p className="mb-5 text-lg font-semibold capitalize text-primary-600">
               {formatearHora(p.horaPartido)}
