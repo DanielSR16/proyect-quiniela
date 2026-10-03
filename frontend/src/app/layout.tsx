@@ -1,10 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "@/styles/app.css";
 
 export const metadata: Metadata = {
-  title: "Quiniela - Predicciones Deportivas",
-  description: "Plataforma para realizar predicciones de eventos deportivos",
-  viewport: "width=device-width, initial-scale=1",
+  title: "Quiniela Liga MX",
+  description: "Predice los resultados de la Liga MX y compite con tus amigos",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -26,25 +30,23 @@ export default function RootLayout({
               <div className="text-2xl font-bold text-primary-600">
                 ⚽ Quiniela
               </div>
-              <nav className="flex gap-6">
-                <a
-                  href="/"
-                  className="text-sm font-medium text-gray-600 hover:text-primary-600 dark:text-gray-400"
-                >
-                  Inicio
-                </a>
-                <a
-                  href="#"
-                  className="text-sm font-medium text-gray-600 hover:text-primary-600 dark:text-gray-400"
-                >
-                  Eventos
-                </a>
-                <a
-                  href="#"
-                  className="text-sm font-medium text-gray-600 hover:text-primary-600 dark:text-gray-400"
-                >
-                  Mis Predicciones
-                </a>
+              <nav className="flex flex-wrap gap-x-6 gap-y-2 text-lg font-semibold">
+                {[
+                  ["/", "Inicio"],
+                  ["/partidos", "Partidos"],
+                  ["/dashboard", "Mis puntos"],
+                  ["/ranking", "Ranking"],
+                  ["/admin", "Admin"],
+                  ["/login", "Entrar"],
+                ].map(([href, label]) => (
+                  <a
+                    key={href}
+                    href={href}
+                    className="text-gray-700 hover:text-primary-600 dark:text-gray-300"
+                  >
+                    {label}
+                  </a>
+                ))}
               </nav>
             </div>
           </header>

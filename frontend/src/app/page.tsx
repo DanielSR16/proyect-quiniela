@@ -1,63 +1,30 @@
-import { EventCard } from "@/components/server/event-card";
-import { Hero } from "@/components/server/hero";
-
 export default function Home() {
-  const upcomingEvents = [
-    {
-      id: 1,
-      sport: "Fútbol",
-      homeTeam: "Real Madrid",
-      awayTeam: "Barcelona",
-      date: "2026-10-15",
-      league: "La Liga",
-      predictions: 1243,
-    },
-    {
-      id: 2,
-      sport: "Fútbol",
-      homeTeam: "Manchester United",
-      awayTeam: "Liverpool",
-      date: "2026-10-15",
-      league: "Premier League",
-      predictions: 2156,
-    },
-    {
-      id: 3,
-      sport: "Basquetbol",
-      homeTeam: "Lakers",
-      awayTeam: "Celtics",
-      date: "2026-10-16",
-      league: "NBA",
-      predictions: 891,
-    },
-  ];
-
   return (
-    <div className="space-y-12">
-      {/* Hero Section */}
-      <Hero />
-
-      {/* Upcoming Events Section */}
-      <section>
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold">Próximos Eventos</h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Realiza tus predicciones en los eventos más emocionantes
-          </p>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {upcomingEvents.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
+    <div className="space-y-8">
+      {/* Bienvenida */}
+      <section className="rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 px-8 py-20 text-white">
+        <h1 className="mb-6 text-5xl font-bold">¡Bienvenido a Quiniela!</h1>
+        <p className="mb-8 text-xl text-primary-100">
+          Predice los resultados de los partidos de la Liga MX y gana puntos.
+        </p>
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <a href="/partidos" className="inline-block rounded-xl bg-white px-8 py-4 text-lg font-bold text-primary-600 transition-transform hover:scale-105 text-center">
+            Ver Próximos Partidos
+          </a>
+          <a href="/dashboard" className="inline-block rounded-xl border-2 border-white px-8 py-4 text-lg font-bold text-white transition-transform hover:scale-105 text-center">
+            Ver Mi Puntuación
+          </a>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="grid gap-6 sm:grid-cols-3">
-        <StatCard label="Eventos Activos" value="42" icon="📊" />
-        <StatCard label="Usuarios Activos" value="5,234" icon="👥" />
-        <StatCard label="Predicciones Realizadas" value="12,456" icon="🎯" />
+      {/* Stats Principales */}
+      <section>
+        <h2 className="mb-6 text-3xl font-bold">Estadísticas</h2>
+        <div className="grid gap-6 sm:grid-cols-3">
+          <StatCard label="Eventos Activos" value="8" emoji="📊" />
+          <StatCard label="Usuarios Activos" value="124" emoji="👥" />
+          <StatCard label="Total Predicciones" value="1,256" emoji="🎯" />
+        </div>
       </section>
     </div>
   );
@@ -66,17 +33,15 @@ export default function Home() {
 interface StatCardProps {
   label: string;
   value: string;
-  icon: string;
+  emoji: string;
 }
 
-function StatCard({ label, value, icon }: StatCardProps) {
+function StatCard({ label, value, emoji }: StatCardProps) {
   return (
-    <div className="card text-center">
-      <div className="text-4xl">{icon}</div>
-      <div className="mt-4 text-2xl font-bold">{value}</div>
-      <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-        {label}
-      </div>
+    <div className="rounded-2xl border-2 border-gray-200 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-900">
+      <div className="mb-4 text-5xl">{emoji}</div>
+      <div className="text-3xl font-bold">{value}</div>
+      <div className="mt-2 text-lg text-gray-600 dark:text-gray-400">{label}</div>
     </div>
   );
 }
