@@ -98,7 +98,7 @@ Los usuarios seleccionan el resultado exacto de cada partido (ej: 2-1, 3-0, etc.
 
 ## 📱 Pantallas (Fase 1)
 
-1. **Login** - Nombre de usuario + Contraseña
+1. **Login** (pantalla de entrada; no hay página de inicio, uso interno) - Nombre de usuario + Contraseña
 2. **Próximos Partidos** - Lista de partidos sin jugar, opción de predecir
 3. **Dashboard/Perfil** - Puntuación personal, historial de predicciones
 4. **Admin Panel** - Crear/editar partidos, resultados, ver predicciones

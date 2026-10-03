@@ -16,7 +16,6 @@ export const viewport: Viewport = {
 };
 
 const enlaces = [
-  ["/", "Inicio"],
   ["/partidos", "Partidos"],
   ["/dashboard", "Mis puntos"],
   ["/ranking", "Ranking"],
@@ -30,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <header className="border-b-4 border-gold-500 bg-primary-600 text-card">
           <div className="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <a href="/" className="font-display text-3xl font-bold">
+            <a href="/partidos" className="font-display text-3xl font-bold">
               Quiniela <span className="text-gold-400">Liga MX</span>
             </a>
             <nav className="flex flex-wrap gap-x-6 gap-y-1 text-lg font-semibold">
