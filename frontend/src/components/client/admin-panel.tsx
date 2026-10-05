@@ -60,10 +60,13 @@ function FormularioPartido({
 }) {
   const [enviando, iniciarEnvio] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  // Partido nuevo: la hora mínima es "ahora". Se calcula tras montar para no desajustar el HTML del servidor.
+  // La hora mínima es "ahora". Se calcula tras montar para no desajustar el HTML del servidor.
+  // Si el partido que se edita ya empezó, no se pone mínimo para poder guardar otros cambios con su hora
+  // actual; el servidor igual rechaza cambiarla a una hora pasada.
   const [minimo, setMinimo] = useState<string | undefined>();
   useEffect(() => {
-    if (!inicial) setMinimo(aInputLocal(new Date().toISOString()));
+    const ahora = aInputLocal(new Date().toISOString());
+    if (!inicial || inicial.hora >= ahora) setMinimo(ahora);
   }, [inicial]);
   const [local, setLocal] = useState(inicial?.local ?? "");
   const [visitante, setVisitante] = useState(inicial?.visitante ?? "");

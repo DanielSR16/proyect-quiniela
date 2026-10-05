@@ -25,15 +25,15 @@ function validarPartido(d: DatosPartido): string | null {
 
 const refrescar = () => revalidatePath("/", "layout");
 
+const aMinuto = (ms: number) => Math.floor(ms / 60_000) * 60_000;
+const MENSAJE_PASADO = "La hora del partido no puede ser anterior a la hora actual";
+
 export async function crearPartido(d: DatosPartido): Promise<Resultado> {
   const error = (await errorSiNoAdmin()) ?? validarPartido(d);
   if (error) return { ok: false, error };
 
-  // No se pueden crear partidos con hora anterior al minuto actual (editar uno existente sí se permite).
-  const minutoActual = Math.floor(Date.now() / 60_000) * 60_000;
-  if (new Date(d.horaPartido).getTime() < minutoActual) {
-    return { ok: false, error: "La hora del partido no puede ser anterior a la hora actual" };
-  }
+  // No se pueden crear partidos con hora anterior al minuto actual.
+  if (aMinuto(new Date(d.horaPartido).getTime()) < aMinuto(Date.now())) return { ok: false, error: MENSAJE_PASADO };
 
   const supabase = await createClient();
   const { error: fallo } = await supabase
@@ -50,6 +50,16 @@ export async function actualizarPartido(id: number, d: DatosPartido): Promise<Re
   if (error) return { ok: false, error };
 
   const supabase = await createClient();
+
+  // La misma regla al editar, pero solo si la hora cambia: corregir equipos o jornada de un partido
+  // que ya empezó sigue permitido dejando su hora como está.
+  const { data: actual } = await supabase.from("matches").select("kickoff_at").eq("id", id).maybeSingle();
+  if (!actual) return { ok: false, error: "Ese partido no existe" };
+  const nueva = aMinuto(new Date(d.horaPartido).getTime());
+  if (nueva !== aMinuto(new Date(actual.kickoff_at).getTime()) && nueva < aMinuto(Date.now())) {
+    return { ok: false, error: MENSAJE_PASADO };
+  }
+
   const { data, error: fallo } = await supabase
     .from("matches")
     .update({ round: d.jornada, home_team: d.local, away_team: d.visitante, kickoff_at: d.horaPartido })
