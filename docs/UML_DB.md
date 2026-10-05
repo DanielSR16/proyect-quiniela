@@ -8,7 +8,7 @@ erDiagram
     auth_users ||--|| profiles : "tiene"
     profiles   ||--o{ predictions : "hace"
     matches    ||--o{ predictions : "recibe"
-    tournaments ||--o{ rounds : "tiene (1-17)"
+    tournaments ||--o{ rounds : "tiene (1-23)"
     tournaments ||--o{ matches : "incluye"
     rounds     ||--o{ matches : "agrupa (tournament_id, round)"
     teams      ||--o{ matches : "juega de local (home_team_id)"
@@ -37,7 +37,7 @@ erDiagram
 
     rounds {
         integer tournament_id PK, FK
-        integer number PK "1 a 17"
+        integer number PK "1 a 17 regular, 18 a 23 liguilla"
         boolean finished "terminada: no admite partidos nuevos"
     }
 
@@ -81,6 +81,7 @@ erDiagram
 - `teams` la modifica solo el desarrollador (RLS: lectura para usuarios activos, sin escritura desde la app). Reemplazó al dominio `team_name`; `frontend/src/lib/equipos.ts` solo conserva colores y siglas del escudo por defecto.
 - `predictions` es única por `(user_id, match_id)`; si se borra el partido se borran sus pronósticos.
 - Los colores y siglas del escudo por defecto pueden quedarse en el front o pasar a `teams` más adelante.
-- Cada torneo (Apertura/Clausura) tiene sus propias jornadas; `rounds` se crea sola (1-17) al crear el torneo. Las posiciones se calculan por torneo.
+- Cada torneo (Apertura/Clausura) tiene sus propias jornadas; `rounds` se crea sola (1-23) al crear el torneo. Las posiciones se calculan por torneo.
 - Una jornada con `finished = true` no admite partidos nuevos ni mover partidos hacia ella (trigger `reject_finished_round`).
 - Las fechas de una jornada ("12 – 15 oct") no se guardan: se calculan con la primera y la última hora de sus partidos.
+- Liguilla (8 equipos, sin Play-In): `round` 18 y 19 = Cuartos ida/vuelta, 20 y 21 = Semifinal ida/vuelta, 22 y 23 = Final ida/vuelta. Cada partido de ida y de vuelta se pronostica y puntúa por separado. Los nombres se calculan en `frontend/src/lib/jornadas.ts`.

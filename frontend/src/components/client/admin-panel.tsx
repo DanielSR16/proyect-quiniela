@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { actualizarPartido, cambiarEstadoJornada, crearPartido, eliminarPartido, guardarResultado } from "@/actions/partidos";
 import { Escudo } from "@/components/client/equipo";
+import { TOTAL_JORNADAS, esLiguilla, etiquetaCorta, nombreJornada } from "@/lib/jornadas";
 import { agruparPorJornada, aInputLocal, desdeInputLocal, formatearCorto, rangoFechas } from "@/lib/formato";
 import type { Partido } from "@/lib/tipos";
 
@@ -21,7 +22,7 @@ interface DatosForm {
 // Devuelve un mensaje de error, o null si todo salió bien.
 type Envio = (d: DatosForm) => Promise<string | null>;
 
-const JORNADAS = Array.from({ length: 17 }, (_, i) => i + 1);
+const JORNADAS = Array.from({ length: TOTAL_JORNADAS }, (_, i) => i + 1);
 
 function SelectorEquipo({
   id,
@@ -114,7 +115,7 @@ function FormularioPartido({
           <option value="" disabled>Selecciona una jornada</option>
           {JORNADAS.map((j) => (
             <option key={j} value={j} disabled={jornadasTerminadas.includes(j) && j !== inicial?.jornada}>
-              Jornada {j}{jornadasTerminadas.includes(j) ? " (terminada)" : ""}
+              {nombreJornada(j)}{jornadasTerminadas.includes(j) ? " (terminada)" : ""}
             </option>
           ))}
         </select>
@@ -189,7 +190,7 @@ function ControlJornadas({ torneoId, terminadas, partidos }: { torneoId: number;
                   terminada ? "border-trazo bg-trazo/20 text-muted" : "border-forest-900 font-bold"
                 }`}
               >
-                <span className="block font-display text-xl">J{j}</span>
+                <span className={`block font-display ${esLiguilla(j) ? "text-base leading-6" : "text-xl"}`}>{etiquetaCorta(j)}</span>
                 <span className="block text-xs uppercase tracking-widest">{terminada ? "Terminada" : "Activa"}</span>
                 <span className="block text-xs font-normal normal-case tracking-normal text-muted">
                   {rangoFechas(partidos.filter((p) => p.jornada === j).map((p) => p.horaPartido)) ?? "Sin partidos"}
@@ -297,7 +298,7 @@ export function AdminPanel({
         {grupos.map(([jornada, partidosJornada]) => (
           <details key={jornada} className="group mt-3">
             <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3 border-b-2 border-forest-900 pb-1 [&::-webkit-details-marker]:hidden">
-              <h3 className="font-display text-2xl">Jornada {jornada}</h3>
+              <h3 className="font-display text-2xl">{nombreJornada(jornada)}</h3>
               <span className="flex items-baseline gap-3 font-sans text-sm text-muted">
                 <span>
                   {rangoFechas(partidosJornada.map((p) => p.horaPartido))} · {partidosJornada.length}{" "}

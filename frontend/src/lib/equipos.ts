@@ -6,6 +6,7 @@ export interface InfoEquipo {
 
 const info: Record<string, InfoEquipo> = {
   "América": { siglas: "AME", fondo: "#f5c400", texto: "#0b2a6b" },
+  "Atlante": { siglas: "ATN", fondo: "#c8102e", texto: "#ffffff" },
   "Atlas": { siglas: "ATL", fondo: "#c8102e", texto: "#ffffff" },
   "Atlético San Luis": { siglas: "ASL", fondo: "#d71920", texto: "#ffffff" },
   "Cruz Azul": { siglas: "CAZ", fondo: "#1b3f94", texto: "#ffffff" },
@@ -41,7 +42,7 @@ export function slugEquipo(nombre: string): string {
 // Slugs de los equipos que ya tienen archivo en public/logos/<slug>.png.
 // Agrega aquí el slug al subir un logo; los demás usan el escudo con siglas.
 export const logosDisponibles: string[] = [
-  "america", "atlas", "atletico-san-luis", "chivas", "cruz-azul", "fc-juarez",
+  "america", "atlante", "atlas", "atletico-san-luis", "chivas", "cruz-azul", "fc-juarez",
   "leon", "mazatlan", "monterrey", "necaxa", "pachuca", "puebla",
   "pumas", "queretaro", "santos", "tigres", "tijuana", "toluca",
 ];

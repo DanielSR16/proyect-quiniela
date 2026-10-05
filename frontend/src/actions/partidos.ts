@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { TOTAL_JORNADAS, nombreJornada } from "@/lib/jornadas";
 import { errorSiNoAdmin } from "@/lib/sesion";
 import { createClient } from "@/lib/supabase/server";
 import type { Resultado } from "@/lib/tipos";
@@ -18,7 +19,7 @@ export interface DatosPartido {
 function validarPartido(d: DatosPartido): string | null {
   if (!Number.isInteger(d.localId) || !Number.isInteger(d.visitanteId)) return "Selecciona los dos equipos";
   if (d.localId === d.visitanteId) return "El local y el visitante deben ser distintos";
-  if (!Number.isInteger(d.jornada) || d.jornada < 1 || d.jornada > 17) return "La jornada debe ser del 1 al 17";
+  if (!Number.isInteger(d.jornada) || d.jornada < 1 || d.jornada > TOTAL_JORNADAS) return "Jornada inválida";
   if (Number.isNaN(new Date(d.horaPartido).getTime())) return "Hora inválida";
   return null;
 }
@@ -37,7 +38,7 @@ export async function crearPartido(d: DatosPartido): Promise<Resultado> {
 
   const supabase = await createClient();
   const { data: jornada } = await supabase.from("rounds").select("finished").eq("tournament_id", d.torneoId).eq("number", d.jornada).maybeSingle();
-  if (jornada?.finished) return { ok: false, error: `La jornada ${d.jornada} está terminada; actívala para agregar partidos` };
+  if (jornada?.finished) return { ok: false, error: `${nombreJornada(d.jornada)} está terminada; actívala para agregar partidos` };
 
   const { error: fallo } = await supabase
     .from("matches")
@@ -60,7 +61,7 @@ export async function actualizarPartido(id: number, d: DatosPartido): Promise<Re
   if (!actual) return { ok: false, error: "Ese partido no existe" };
   if (d.jornada !== actual.round) {
     const { data: jornada } = await supabase.from("rounds").select("finished").eq("tournament_id", actual.tournament_id).eq("number", d.jornada).maybeSingle();
-    if (jornada?.finished) return { ok: false, error: `La jornada ${d.jornada} está terminada; actívala para mover partidos a ella` };
+    if (jornada?.finished) return { ok: false, error: `${nombreJornada(d.jornada)} está terminada; actívala para mover partidos a ella` };
   }
   const nueva = aMinuto(new Date(d.horaPartido).getTime());
   if (nueva !== aMinuto(new Date(actual.kickoff_at).getTime()) && nueva < aMinuto(Date.now())) {
@@ -117,7 +118,7 @@ export async function guardarResultado(id: number, local: number, visitante: num
 export async function cambiarEstadoJornada(torneoId: number, numero: number, terminada: boolean): Promise<Resultado> {
   const error = await errorSiNoAdmin();
   if (error) return { ok: false, error };
-  if (!Number.isInteger(numero) || numero < 1 || numero > 17) return { ok: false, error: "La jornada debe ser del 1 al 17" };
+  if (!Number.isInteger(numero) || numero < 1 || numero > TOTAL_JORNADAS) return { ok: false, error: "Jornada inválida" };
 
   const supabase = await createClient();
   const { data, error: fallo } = await supabase.from("rounds").update({ finished: terminada }).eq("tournament_id", torneoId).eq("number", numero).select("number");

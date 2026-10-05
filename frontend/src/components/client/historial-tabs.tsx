@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Equipo } from "@/components/client/equipo";
+import { nombreJornada } from "@/lib/jornadas";
 import { agruparPorJornada, formatearCorto, rangoFechas } from "@/lib/formato";
 import type { Partido, Prediccion } from "@/lib/tipos";
 
@@ -19,7 +20,7 @@ function Jornada({ jornada, items }: { jornada: number; items: ItemHistorial[] }
   return (
     <div>
       <h2 className="mt-5 flex items-baseline justify-between border-b-2 border-forest-900 pb-1 font-display text-2xl first:mt-0">
-        <span>Jornada {jornada}</span>
+        <span>{nombreJornada(jornada)}</span>
         <span className="font-sans text-sm text-muted">
           {rangoFechas(items.map((h) => h.horaPartido))} · {items.reduce((suma, h) => suma + h.puntos, 0)} pts
         </span>
@@ -84,7 +85,7 @@ export function HistorialTabs({ historial, nombre }: { historial: ItemHistorial[
           </>
         ) : (
           <>
-            Llevas <strong className="font-display text-2xl text-gold-400">{totalJornada}</strong> puntos en la jornada {jornada}.
+            Llevas <strong className="font-display text-2xl text-gold-400">{totalJornada}</strong> puntos en {nombreJornada(jornada).toLowerCase()}.
           </>
         )}{" "}
         Aquí ves tus propios pronósticos; la tabla de todos está en Posiciones.
@@ -109,13 +110,13 @@ export function HistorialTabs({ historial, nombre }: { historial: ItemHistorial[
                   : "border-cream/30 text-cream hover:text-gold-400"
               }`}
             >
-              Jornada {j}
+              {nombreJornada(j)}
             </button>
           ))}
         </nav>
       )}
 
-      <section className="ticket" aria-label={vista === "general" ? "Tu historial general" : `Tu historial de la jornada ${jornada}`}>
+      <section className="ticket" aria-label={vista === "general" ? "Tu historial general" : `Tu historial: ${nombreJornada(jornada)}`}>
         {grupos.length === 0 && <p className="text-muted">Todavía no hay partidos con resultado.</p>}
         {vista === "general"
           ? grupos.map(([j, items]) => <Jornada key={j} jornada={j} items={items} />)

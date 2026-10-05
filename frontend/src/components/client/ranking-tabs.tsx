@@ -8,10 +8,12 @@ import {
   type JugadorPosicionado,
   type PrediccionDeJugador,
 } from "@/lib/ranking";
+import { nombreJornada } from "@/lib/jornadas";
 import { rangoFechas } from "@/lib/formato";
+import { LiguillaLlaves } from "@/components/client/liguilla-llaves";
 import type { Partido } from "@/lib/tipos";
 
-type Vista = "general" | "jornada";
+type Vista = "general" | "jornada" | "liguilla";
 
 type Lista = JugadorPosicionado[];
 
@@ -70,7 +72,7 @@ function TablaJornada({
   const [abierto, setAbierto] = useState<string | null>(null);
 
   return (
-    <section className="ticket" aria-label={`Tabla de posiciones de la jornada ${jornada}`}>
+    <section className="ticket" aria-label={`Tabla de posiciones: ${nombreJornada(jornada)}`}>
       <ol>
         {lista.map((j) => {
           const detalle = detalleJugador(j.id, jornada, partidos, predicciones);
@@ -149,15 +151,20 @@ export function RankingTabs({
     <div>
       <h1 className="text-5xl text-gold-400">Posiciones</h1>
       <p className="mb-5 mt-2 text-cream/70">
-        {vista === "general"
-          ? "Los puntos acumulados de todos los participantes."
-          : `Los puntos de cada participante solo en la jornada ${jornada}${fechas ? ` (${fechas})` : ""}.`}{" "}
-        Si hay empate, gana quien tenga más marcadores exactos.{vista === "jornada" && " Toca un jugador para ver sus marcadores."}
+        {vista === "liguilla"
+          ? "Las llaves de la liguilla (8 equipos, ida y vuelta) según la tabla de la fase regular."
+          : <>
+              {vista === "general"
+                ? "Los puntos acumulados de todos los participantes."
+                : `Los puntos de cada participante en ${nombreJornada(jornada).toLowerCase()}${fechas ? ` (${fechas})` : ""}.`}{" "}
+              Si hay empate, gana quien tenga más marcadores exactos.{vista === "jornada" && " Toca un jugador para ver sus marcadores."}
+            </>}
       </p>
 
       <div className="mb-4 flex gap-2">
         {botonVista("general", "General")}
         {botonVista("jornada", "Por jornada")}
+        {botonVista("liguilla", "Liguilla")}
       </div>
 
       {vista === "jornada" && (
@@ -174,13 +181,15 @@ export function RankingTabs({
                   : "border-cream/30 text-cream hover:text-gold-400"
               }`}
             >
-              Jornada {j}
+              {nombreJornada(j)}
             </button>
           ))}
         </nav>
       )}
 
-      {vista === "general" ? (
+      {vista === "liguilla" ? (
+        <LiguillaLlaves partidos={partidos} />
+      ) : vista === "general" ? (
         <Tabla lista={ordenarRanking(totalesPorJugador(jugadores, partidos, predicciones))} etiqueta="Tabla de posiciones general" />
       ) : (
         <TablaJornada

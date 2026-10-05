@@ -17,8 +17,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${anton.variable} ${space.variable}`}>
-      <body>{children}</body>
+    <html lang="es" className={`${anton.variable} ${space.variable}`} suppressHydrationWarning>
+      {/* Extensiones y modos oscuros automáticos de algunos navegadores (sobre todo en celular) cambian atributos
+          del HTML antes de que React cargue; sin esto Next muestra un aviso falso de hidratación en desarrollo. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
