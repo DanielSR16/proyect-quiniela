@@ -29,6 +29,12 @@ export async function crearPartido(d: DatosPartido): Promise<Resultado> {
   const error = (await errorSiNoAdmin()) ?? validarPartido(d);
   if (error) return { ok: false, error };
 
+  // No se pueden crear partidos con hora anterior al minuto actual (editar uno existente sí se permite).
+  const minutoActual = Math.floor(Date.now() / 60_000) * 60_000;
+  if (new Date(d.horaPartido).getTime() < minutoActual) {
+    return { ok: false, error: "La hora del partido no puede ser anterior a la hora actual" };
+  }
+
   const supabase = await createClient();
   const { error: fallo } = await supabase
     .from("matches")

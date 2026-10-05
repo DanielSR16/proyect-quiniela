@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { actualizarPartido, crearPartido, eliminarPartido, guardarResultado } from "@/actions/partidos";
 import { Escudo } from "@/components/client/equipo";
 import { equipos } from "@/lib/equipos";
@@ -60,6 +60,11 @@ function FormularioPartido({
 }) {
   const [enviando, iniciarEnvio] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  // Partido nuevo: la hora mínima es "ahora". Se calcula tras montar para no desajustar el HTML del servidor.
+  const [minimo, setMinimo] = useState<string | undefined>();
+  useEffect(() => {
+    if (!inicial) setMinimo(aInputLocal(new Date().toISOString()));
+  }, [inicial]);
   const [local, setLocal] = useState(inicial?.local ?? "");
   const [visitante, setVisitante] = useState(inicial?.visitante ?? "");
   const [hora, setHora] = useState(inicial?.hora ?? "");
@@ -100,6 +105,7 @@ function FormularioPartido({
           id={`${idBase}-hora`}
           type="datetime-local"
           required
+          min={minimo}
           value={hora}
           onChange={(e) => setHora(e.target.value)}
           className="campo"
