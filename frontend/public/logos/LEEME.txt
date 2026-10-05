@@ -1,0 +1,8 @@
+Logos de equipos (opcional).
+
+Coloca aqui el escudo oficial de cada equipo como PNG cuadrado, con el nombre
+en minusculas, sin acentos y con guiones: america.png, atletico-san-luis.png,
+cruz-azul.png, fc-juarez.png, etc. (ver src/lib/equipos.ts).
+
+Despues agrega el slug (ej. "america") a logosDisponibles en src/lib/equipos.ts.
+Si el equipo no esta en esa lista, se muestra un escudo con las siglas del equipo.

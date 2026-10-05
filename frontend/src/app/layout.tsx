@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Source_Sans_3 } from "next/font/google";
+import { Anton, Space_Mono } from "next/font/google";
+import { Nav } from "@/components/client/nav";
 import "@/styles/app.css";
 
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
-const source = Source_Sans_3({ subsets: ["latin"], variable: "--font-source" });
+const anton = Anton({ subsets: ["latin"], weight: "400", variable: "--font-anton" });
+const space = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-space" });
 
 export const metadata: Metadata = {
   title: "Quiniela Liga MX",
@@ -15,38 +16,20 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-const enlaces = [
-  ["/partidos", "Partidos"],
-  ["/dashboard", "Mis puntos"],
-  ["/ranking", "Ranking"],
-  ["/admin", "Admin"],
-  ["/login", "Entrar"],
-];
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${playfair.variable} ${source.variable}`}>
+    <html lang="es" className={`${anton.variable} ${space.variable}`}>
       <body>
-        <header className="border-b-4 border-gold-500 bg-primary-600 text-card">
-          <div className="mx-auto flex max-w-5xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <a href="/partidos" className="font-display text-3xl font-bold">
-              Quiniela <span className="text-gold-400">Liga MX</span>
+        <header className="border-b-2 border-dashed border-cream/40">
+          <div className="mx-auto flex max-w-4xl flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:gap-8">
+            <a href="/partidos" className="font-display text-3xl leading-none tracking-wide text-gold-400">
+              QUINIELA LIGA MX
             </a>
-            <nav className="flex flex-wrap gap-x-6 gap-y-1 text-lg font-semibold">
-              {enlaces.map(([href, label]) => (
-                <a key={href} href={href} className="hover:text-gold-400">
-                  {label}
-                </a>
-              ))}
-            </nav>
+            <Nav />
           </div>
         </header>
 
-        <main className="mx-auto max-w-5xl px-5 py-10">{children}</main>
-
-        <footer className="border-t border-line py-6 text-center text-base text-ink/70">
-          Quiniela Liga MX · 2026
-        </footer>
+        <main className="mx-auto max-w-4xl px-5 pb-28 pt-8 sm:pb-12">{children}</main>
       </body>
     </html>
   );

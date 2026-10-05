@@ -3,41 +3,111 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --font-display: var(--font-playfair), Georgia, serif;
-  --font-sans: var(--font-source), system-ui, sans-serif;
+  --font-display: var(--font-anton), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-space), ui-monospace, monospace;
 }
 
 @theme {
-  --color-paper: #f5efe1;
-  --color-card: #fffdf7;
-  --color-line: #d8ccb2;
-  --color-ink: #2a2620;
+  --color-forest-900: #10291f;
+  --color-forest-800: #17382b;
+  --color-forest-700: #214a39;
 
-  --color-primary-50: #eef4ef;
-  --color-primary-100: #d5e4d8;
-  --color-primary-500: #2f6b45;
-  --color-primary-600: #1f5233;
-  --color-primary-700: #163d26;
+  --color-gold-400: #e0a63a;
+  --color-gold-500: #c98f24;
 
-  --color-gold-400: #d4a93c;
-  --color-gold-500: #b8902a;
-  --color-gold-600: #967420;
-
-  --color-wine-600: #7a1f2b;
+  --color-cream: #f3ead7;
+  --color-cream-dark: #e8dfcb;
+  --color-tinta: #1d1b14;
+  --color-muted: #6f6650;
+  --color-trazo: #c9ba93;
+  --color-error: #9a2f27;
 }
 
 @layer base {
   html {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   body {
-    @apply bg-paper font-sans text-ink antialiased;
+    @apply bg-forest-900 font-sans text-cream antialiased;
   }
 
   h1,
   h2,
   h3 {
-    @apply font-display font-bold tracking-tight;
+    @apply font-display font-normal tracking-wide;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-gold-400);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Boleto crema con borde perforado arriba y abajo */
+  .ticket {
+    position: relative;
+    margin-bottom: 2rem;
+    padding: 2.25rem 1.25rem;
+    background-color: var(--color-cream);
+    color: var(--color-tinta);
+  }
+
+  .ticket-cerrado {
+    background-color: var(--color-cream-dark);
+  }
+
+  .ticket::before,
+  .ticket::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 14px;
+    background-image: radial-gradient(circle at center, var(--color-forest-900) 5px, transparent 5.5px);
+    background-size: 30px 14px;
+    background-repeat: repeat-x;
+    background-position: center;
+  }
+
+  .ticket::before {
+    top: 0;
+  }
+
+  .ticket::after {
+    bottom: 0;
+  }
+
+  .fila {
+    @apply border-b-2 border-dashed border-trazo py-5;
+  }
+
+  .etiqueta {
+    @apply text-sm uppercase tracking-widest text-muted;
+  }
+
+  .campo {
+    @apply block w-full min-w-0 rounded-sm border-2 border-dashed border-trazo bg-transparent px-4 py-3 text-base text-tinta focus:border-solid focus:border-forest-900 focus:outline-none;
+  }
+
+  select.campo {
+    @apply cursor-pointer appearance-none pr-12;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231a2b22' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+  }
+
+  .campo::-webkit-calendar-picker-indicator {
+    margin-right: 0.25rem;
+    cursor: pointer;
+  }
+
+  .boton {
+    @apply rounded-sm bg-forest-900 px-5 py-3 text-base font-bold text-cream transition-colors hover:bg-forest-700 active:translate-y-px;
+  }
+
+  .boton-oro {
+    @apply rounded-sm bg-gold-400 px-5 py-3 text-base font-bold text-forest-900 transition-colors hover:bg-gold-500 active:translate-y-px;
   }
 }
