@@ -25,6 +25,9 @@ const info: Record<string, InfoEquipo> = {
   "Toluca": { siglas: "TOL", fondo: "#c8102e", texto: "#ffffff" },
 };
 
+// Lista fija de equipos (en el orden de la tabla). La base de datos valida los mismos nombres.
+export const equipos: string[] = Object.keys(info);
+
 export function infoEquipo(nombre: string): InfoEquipo {
   return info[nombre] ?? { siglas: nombre.slice(0, 3).toUpperCase(), fondo: "#214a39", texto: "#f3ead7" };
 }

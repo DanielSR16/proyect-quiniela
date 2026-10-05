@@ -1,13 +1,13 @@
 # Frontend - Quiniela
 
-Frontend de Quiniela construido con **React 19** y **Next.js 14**, utilizando **Tailwind CSS v4** con configuración CSS-first.
+Frontend de Quiniela construido con **React 19** y **Next.js 15**, utilizando **Tailwind CSS v4** con configuración CSS-first.
 
 ## 📁 Estructura del Proyecto
 
 ```
 frontend/
 ├── src/
-│   ├── app/                    # App Router (Next.js 14)
+│   ├── app/                    # App Router (Next.js 15)
 │   │   ├── layout.tsx          # Server Component raíz
 │   │   ├── page.tsx            # Página de inicio
 │   │   └── ...                 # Otras rutas
@@ -34,9 +34,21 @@ frontend/
 ### Instalación
 
 ```bash
-cd frontend
-npm install
+npm install        # desde la raíz del repo
+cp frontend/.env.example frontend/.env.local   # y completa las claves de Supabase
 ```
+
+Variables (`frontend/.env.local`):
+
+- `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: públicas.
+- `SUPABASE_SERVICE_ROLE_KEY`: **secreta**, solo servidor (crear/editar/bloquear usuarios desde el panel de admin).
+
+### Base de datos
+
+El esquema está en `supabase/migrations/` (se aplican en orden). En Supabase:
+desactiva *Authentication → Sign In / Providers → Allow new users to sign up* (solo el admin crea cuentas).
+El primer admin se crea en *Authentication → Users*, y se promueve con
+`insert into public.profiles (id, name, role) values ('<uuid>', '<nombre>', 'admin');`.
 
 ### Desarrollo
 
@@ -56,7 +68,8 @@ npm start
 ## 🏗️ Stack Tecnológico
 
 - **React 19** - Framework de UI
-- **Next.js 14** - Framework full-stack
+- **Next.js 15** - Framework full-stack
+- **Supabase** - Postgres, Auth y RLS (sin backend propio)
 - **TypeScript** - Tipado estático
 - **Tailwind CSS v4** - Estilos CSS-first
 - **Server Components** - Renderizado en servidor

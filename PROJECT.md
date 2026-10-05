@@ -168,10 +168,10 @@ Los usuarios seleccionan el resultado exacto de cada partido (ej: 2-1, 3-0, etc.
 
 ## ⚙️ Stack Tecnológico (Actual)
 
-- **Frontend:** React 19 + Next.js 14 + Tailwind CSS v4 ✅
-- **Backend:** A definir (Express 5 + Node.js - futuro)
-- **Base de datos:** A definir - SQLite (dev) o PostgreSQL (prod)
-- **Auth:** Session-based simple (nombre + contraseña)
+- **Frontend:** React 19 + Next.js 15 + Tailwind CSS v4 ✅ (Server Components + Server Actions)
+- **Backend:** Supabase (sin servidor propio): Postgres + Auth + RLS + triggers
+- **Base de datos:** Supabase Postgres. Esquema en `supabase/migrations/` (tablas `profiles`, `matches`, `predictions`)
+- **Auth:** Supabase Auth (correo + contraseña); el admin crea las cuentas (registro público desactivado)
 
 ## 🚀 Fase Actual: Frontend
 

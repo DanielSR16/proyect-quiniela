@@ -3,15 +3,19 @@
 import { useState } from "react";
 import { Equipo } from "@/components/client/equipo";
 import { Predictor } from "@/components/client/predictor";
-import { calcularPuntos, formatearCorto, misPredicciones, partidos } from "@/lib/mock-data";
+import { formatearCorto } from "@/lib/formato";
+import type { Partido, Prediccion } from "@/lib/tipos";
 
-const jornadas = [...new Set(partidos.map((p) => p.jornada))].sort((a, b) => a - b);
-
-// Por defecto se muestra la jornada más reciente (la de número más alto).
-const jornadaActual = jornadas[jornadas.length - 1];
-
-export function PartidosPorJornada() {
-  const [jornada, setJornada] = useState(jornadaActual);
+export function PartidosPorJornada({
+  partidos,
+  misPredicciones,
+}: {
+  partidos: Partido[];
+  misPredicciones: Prediccion[];
+}) {
+  const jornadas = [...new Set(partidos.map((p) => p.jornada))].sort((a, b) => a - b);
+  // Por defecto se muestra la jornada más reciente (la de número más alto).
+  const [jornada, setJornada] = useState(jornadas[jornadas.length - 1] ?? 1);
 
   const delaJornada = partidos.filter((p) => p.jornada === jornada);
   const proximos = delaJornada.filter((p) => p.resultadoLocal === null);
@@ -46,6 +50,7 @@ export function PartidosPorJornada() {
           {proximos.map((p) => (
             <Predictor
               key={p.id}
+              partidoId={p.id}
               local={p.local}
               visitante={p.visitante}
               hora={formatearCorto(p.horaPartido)}
@@ -62,7 +67,7 @@ export function PartidosPorJornada() {
           {cerrados.map((p) => {
             const pred = misPredicciones.find((m) => m.partidoId === p.id);
             const real = { local: p.resultadoLocal!, visitante: p.resultadoVisitante! };
-            const puntos = pred ? calcularPuntos(pred, real) : null;
+            const puntos = pred ? (pred.puntos ?? 0) : null;
             return (
               <div key={p.id} className="fila">
                 <div className="flex items-baseline justify-between gap-3 text-sm">
@@ -87,7 +92,11 @@ export function PartidosPorJornada() {
         </section>
       )}
 
-      {delaJornada.length === 0 && <p className="text-cream/70">Esta jornada todavía no tiene partidos.</p>}
+      {delaJornada.length === 0 && (
+        <p className="text-cream/70">
+          {partidos.length === 0 ? "Todavía no hay partidos. El administrador los irá agregando." : "Esta jornada todavía no tiene partidos."}
+        </p>
+      )}
     </div>
   );
 }

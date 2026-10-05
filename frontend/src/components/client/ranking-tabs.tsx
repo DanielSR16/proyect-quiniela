@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { detalleJugador, jugadores, jugadoresDeJornada, ordenarRanking, partidos } from "@/lib/mock-data";
-
-const jornadas = [...new Set(partidos.map((p) => p.jornada))].sort((a, b) => a - b);
-
-// Por defecto, siempre la jornada más reciente (la de número más alto).
-const jornadaActual = jornadas[jornadas.length - 1];
+import {
+  detalleJugador,
+  ordenarRanking,
+  totalesPorJugador,
+  type JugadorPosicionado,
+  type PrediccionDeJugador,
+} from "@/lib/ranking";
+import type { Partido } from "@/lib/tipos";
 
 type Vista = "general" | "jornada";
 
-type Lista = ReturnType<typeof ordenarRanking>;
+type Lista = JugadorPosicionado[];
 
 function Posicion({ n }: { n: number }) {
   return (
@@ -53,14 +55,24 @@ function Tabla({ lista, etiqueta }: { lista: Lista; etiqueta: string }) {
   );
 }
 
-function TablaJornada({ lista, jornada }: { lista: Lista; jornada: number }) {
-  const [abierto, setAbierto] = useState<number | null>(null);
+function TablaJornada({
+  lista,
+  jornada,
+  partidos,
+  predicciones,
+}: {
+  lista: Lista;
+  jornada: number;
+  partidos: Partido[];
+  predicciones: PrediccionDeJugador[];
+}) {
+  const [abierto, setAbierto] = useState<string | null>(null);
 
   return (
     <section className="ticket" aria-label={`Tabla de posiciones de la jornada ${jornada}`}>
       <ol>
         {lista.map((j) => {
-          const detalle = detalleJugador(j.id, jornada);
+          const detalle = detalleJugador(j.id, jornada, partidos, predicciones);
           const expandido = abierto === j.id && detalle.length > 0;
           return (
             <li key={j.id} className="fila">
@@ -101,9 +113,19 @@ function TablaJornada({ lista, jornada }: { lista: Lista; jornada: number }) {
   );
 }
 
-export function RankingTabs() {
+export function RankingTabs({
+  jugadores,
+  partidos,
+  predicciones,
+}: {
+  jugadores: { id: string; nombre: string }[];
+  partidos: Partido[];
+  predicciones: PrediccionDeJugador[];
+}) {
+  const jornadas = [...new Set(partidos.map((p) => p.jornada))].sort((a, b) => a - b);
   const [vista, setVista] = useState<Vista>("general");
-  const [jornada, setJornada] = useState(jornadaActual);
+  // Por defecto, siempre la jornada más reciente (la de número más alto).
+  const [jornada, setJornada] = useState(jornadas[jornadas.length - 1] ?? 1);
 
   const botonVista = (v: Vista, texto: string) => (
     <button
@@ -156,9 +178,15 @@ export function RankingTabs() {
       )}
 
       {vista === "general" ? (
-        <Tabla lista={ordenarRanking(jugadores)} etiqueta="Tabla de posiciones general" />
+        <Tabla lista={ordenarRanking(totalesPorJugador(jugadores, partidos, predicciones))} etiqueta="Tabla de posiciones general" />
       ) : (
-        <TablaJornada key={jornada} lista={ordenarRanking(jugadoresDeJornada(jornada))} jornada={jornada} />
+        <TablaJornada
+          key={jornada}
+          lista={ordenarRanking(totalesPorJugador(jugadores, partidos, predicciones, jornada))}
+          jornada={jornada}
+          partidos={partidos}
+          predicciones={predicciones}
+        />
       )}
     </div>
   );
