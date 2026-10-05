@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { usuarios as iniciales, type Rol, type Usuario } from "@/lib/mock-data";
+import { useState, useTransition } from "react";
+import { cambiarBloqueo, crearUsuario, editarUsuario } from "@/actions/usuarios";
+import type { Rol, Usuario } from "@/lib/tipos";
+
+// Devuelve un mensaje de error, o null si todo salió bien.
+type Guardar = (u: Usuario, contrasena: string) => Promise<string | null>;
 
 const roles: { valor: Rol; label: string }[] = [
-  { valor: "jugador", label: "Jugador" },
+  { valor: "player", label: "Jugador" },
   { valor: "admin", label: "Administrador" },
 ];
 
@@ -28,7 +32,7 @@ function FormularioUsuario({
   esNuevo = false,
 }: {
   inicial: Usuario;
-  onGuardar: (u: Usuario, contrasena: string) => void;
+  onGuardar: Guardar;
   onCancelar: () => void;
   textoEnvio?: string;
   esNuevo?: boolean;
@@ -38,14 +42,18 @@ function FormularioUsuario({
   const [rol, setRol] = useState<Rol>(inicial.rol);
   const [contrasena, setContrasena] = useState("");
   const [verContrasena, setVerContrasena] = useState(false);
-  const id = `usuario-${inicial.id}`;
+  const [enviando, iniciarEnvio] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const id = `usuario-${inicial.id || "nuevo"}`;
 
   return (
     <form
       className="grid grid-cols-1 gap-4 sm:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault();
-        onGuardar({ ...inicial, nombre: nombre.trim(), correo: correo.trim(), rol }, contrasena);
+        iniciarEnvio(async () => {
+          setError(await onGuardar({ ...inicial, nombre: nombre.trim(), correo: correo.trim(), rol }, contrasena));
+        });
       }}
     >
       <div>
@@ -95,8 +103,11 @@ function FormularioUsuario({
           ))}
         </select>
       </div>
+      {error && <p role="alert" className="font-bold text-error sm:col-span-2">{error}</p>}
       <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row">
-        <button type="submit" className="boton sm:flex-1">{textoEnvio}</button>
+        <button type="submit" disabled={enviando} className="boton disabled:opacity-60 sm:flex-1">
+          {enviando ? "Guardando…" : textoEnvio}
+        </button>
         <button type="button" onClick={onCancelar} className="boton !bg-transparent !text-tinta border-2 border-trazo hover:!border-forest-900">
           Cancelar
         </button>
@@ -105,28 +116,37 @@ function FormularioUsuario({
   );
 }
 
-export function UsuariosPanel() {
-  const [lista, setLista] = useState<Usuario[]>(iniciales);
-  const [editando, setEditando] = useState<number | null>(null);
+export function UsuariosPanel({ usuarios }: { usuarios: Usuario[] }) {
+  const [editando, setEditando] = useState<string | null>(null);
   const [agregando, setAgregando] = useState(false);
-  const [bloqueando, setBloqueando] = useState<number | null>(null);
+  const [bloqueando, setBloqueando] = useState<string | null>(null);
+  const [cambiando, iniciarCambio] = useTransition();
+  const [errorBloqueo, setErrorBloqueo] = useState<string | null>(null);
 
-  const guardar = (u: Usuario, _contrasena: string) => {
-    setLista((l) => l.map((x) => (x.id === u.id ? u : x)));
-    setEditando(null);
+  const guardar: Guardar = async (u, contrasena) => {
+    const r = await editarUsuario(u.id, { nombre: u.nombre, correo: u.correo, rol: u.rol, password: contrasena });
+    if (r.ok) setEditando(null);
+    return r.ok ? null : r.error;
   };
 
-  const cambiarBloqueo = (id: number, bloqueado: boolean) => {
-    setLista((l) => l.map((x) => (x.id === id ? { ...x, bloqueado } : x)));
-    setBloqueando(null);
+  const agregar: Guardar = async (u, contrasena) => {
+    const r = await crearUsuario({ nombre: u.nombre, correo: u.correo, rol: u.rol, password: contrasena });
+    if (r.ok) setAgregando(false);
+    return r.ok ? null : r.error;
   };
 
-  const adminsActivos = lista.filter((x) => x.rol === "admin" && !x.bloqueado).length;
+  const aplicarBloqueo = (id: string, bloqueado: boolean) =>
+    iniciarCambio(async () => {
+      const r = await cambiarBloqueo(id, bloqueado);
+      if (r.ok) {
+        setBloqueando(null);
+        setErrorBloqueo(null);
+      } else {
+        setErrorBloqueo(r.error);
+      }
+    });
 
-  const agregar = (u: Usuario, _contrasena: string) => {
-    setLista((l) => [...l, { ...u, id: Math.max(0, ...l.map((x) => x.id)) + 1 }]);
-    setAgregando(false);
-  };
+  const adminsActivos = usuarios.filter((x) => x.rol === "admin" && !x.bloqueado).length;
 
   return (
     <section className="ticket" aria-labelledby="usuarios">
@@ -142,7 +162,7 @@ export function UsuariosPanel() {
         <div className="fila">
           <p className="etiqueta !font-sans mb-3">Nuevo usuario</p>
           <FormularioUsuario
-            inicial={{ id: 0, nombre: "", correo: "", rol: "jugador", bloqueado: false }}
+            inicial={{ id: "", nombre: "", correo: "", rol: "player", bloqueado: false }}
             textoEnvio="Agregar usuario"
             esNuevo
             onGuardar={agregar}
@@ -150,7 +170,7 @@ export function UsuariosPanel() {
           />
         </div>
       )}
-      {lista.map((u) =>
+      {usuarios.map((u) =>
         editando === u.id ? (
           <div key={u.id} className="fila">
             <p className="etiqueta !font-sans mb-3">Editando usuario</p>
@@ -172,7 +192,7 @@ export function UsuariosPanel() {
                     Editar
                   </button>
                   {u.bloqueado ? (
-                    <button type="button" onClick={() => cambiarBloqueo(u.id, false)} className="font-bold underline underline-offset-4 hover:text-forest-700">
+                    <button type="button" onClick={() => aplicarBloqueo(u.id, false)} disabled={cambiando} className="font-bold underline underline-offset-4 hover:text-forest-700 disabled:opacity-60">
                       Desbloquear
                     </button>
                   ) : (
@@ -180,7 +200,7 @@ export function UsuariosPanel() {
                       type="button"
                       disabled={u.rol === "admin" && adminsActivos === 1}
                       title={u.rol === "admin" && adminsActivos === 1 ? "Debe quedar al menos un administrador activo" : undefined}
-                      onClick={() => { setBloqueando(u.id); setEditando(null); setAgregando(false); }}
+                      onClick={() => { setBloqueando(u.id); setEditando(null); setAgregando(false); setErrorBloqueo(null); }}
                       className="text-error underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Bloquear
@@ -192,8 +212,9 @@ export function UsuariosPanel() {
             {bloqueando === u.id && (
               <div className="flex flex-wrap items-center gap-3 text-sm">
                 <span className="font-bold text-error">¿Bloquear a {u.nombre}? No podrá entrar a la quiniela.</span>
-                <button type="button" onClick={() => cambiarBloqueo(u.id, true)} className="boton !bg-error !py-1.5 !text-sm">Sí, bloquear</button>
+                <button type="button" onClick={() => aplicarBloqueo(u.id, true)} disabled={cambiando} className="boton !bg-error !py-1.5 !text-sm disabled:opacity-60">Sí, bloquear</button>
                 <button type="button" onClick={() => setBloqueando(null)} className="underline underline-offset-4">Cancelar</button>
+                {errorBloqueo && <span role="alert" className="font-bold text-error">{errorBloqueo}</span>}
               </div>
             )}
           </div>

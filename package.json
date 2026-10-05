@@ -1,23 +1,22 @@
 {
   "name": "quiniela",
   "version": "1.0.0",
-  "description": "Proyecto Quiniela - Full Stack con Agentes Personalizados",
+  "description": "Quiniela de la Liga MX - Next.js + Supabase",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run dev -w backend & npm run dev -w frontend",
-    "build": "npm run build -w backend && npm run build -w frontend",
-    "test": "npm test -w backend && npm test -w frontend"
+    "dev": "npm run dev -w frontend",
+    "build": "npm run build -w frontend",
+    "start": "npm run start -w frontend"
   },
   "workspaces": [
-    "backend",
     "frontend"
   ],
   "keywords": [
-    "api",
-    "express",
+    "nextjs",
     "react",
-    "fullstack"
+    "supabase",
+    "quiniela"
   ],
   "author": "Daniel San Román",
   "license": "MIT"

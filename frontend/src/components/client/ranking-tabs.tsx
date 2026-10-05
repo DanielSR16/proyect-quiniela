@@ -1,16 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { detalleJugador, jugadores, jugadoresDeJornada, ordenarRanking, partidos } from "@/lib/mock-data";
+import {
+  detalleJugador,
+  ordenarRanking,
+  totalesPorJugador,
+  type JugadorPosicionado,
+  type PrediccionDeJugador,
+} from "@/lib/ranking";
+import { nombreJornada } from "@/lib/jornadas";
+import { rangoFechas } from "@/lib/formato";
+import { LiguillaLlaves } from "@/components/client/liguilla-llaves";
+import type { Partido } from "@/lib/tipos";
 
-const jornadas = [...new Set(partidos.map((p) => p.jornada))].sort((a, b) => a - b);
+type Vista = "general" | "jornada" | "liguilla";
 
-// Por defecto, siempre la jornada más reciente (la de número más alto).
-const jornadaActual = jornadas[jornadas.length - 1];
-
-type Vista = "general" | "jornada";
-
-type Lista = ReturnType<typeof ordenarRanking>;
+type Lista = JugadorPosicionado[];
 
 function Posicion({ n }: { n: number }) {
   return (
@@ -53,14 +58,24 @@ function Tabla({ lista, etiqueta }: { lista: Lista; etiqueta: string }) {
   );
 }
 
-function TablaJornada({ lista, jornada }: { lista: Lista; jornada: number }) {
-  const [abierto, setAbierto] = useState<number | null>(null);
+function TablaJornada({
+  lista,
+  jornada,
+  partidos,
+  predicciones,
+}: {
+  lista: Lista;
+  jornada: number;
+  partidos: Partido[];
+  predicciones: PrediccionDeJugador[];
+}) {
+  const [abierto, setAbierto] = useState<string | null>(null);
 
   return (
-    <section className="ticket" aria-label={`Tabla de posiciones de la jornada ${jornada}`}>
+    <section className="ticket" aria-label={`Tabla de posiciones: ${nombreJornada(jornada)}`}>
       <ol>
         {lista.map((j) => {
-          const detalle = detalleJugador(j.id, jornada);
+          const detalle = detalleJugador(j.id, jornada, partidos, predicciones);
           const expandido = abierto === j.id && detalle.length > 0;
           return (
             <li key={j.id} className="fila">
@@ -101,9 +116,21 @@ function TablaJornada({ lista, jornada }: { lista: Lista; jornada: number }) {
   );
 }
 
-export function RankingTabs() {
+export function RankingTabs({
+  jugadores,
+  partidos,
+  predicciones,
+}: {
+  jugadores: { id: string; nombre: string }[];
+  partidos: Partido[];
+  predicciones: PrediccionDeJugador[];
+}) {
+  const jornadas = [...new Set(partidos.map((p) => p.jornada))].sort((a, b) => a - b);
   const [vista, setVista] = useState<Vista>("general");
-  const [jornada, setJornada] = useState(jornadaActual);
+  // Por defecto, siempre la jornada más reciente (la de número más alto).
+  const [jornada, setJornada] = useState(jornadas[jornadas.length - 1] ?? 1);
+
+  const fechas = rangoFechas(partidos.filter((p) => p.jornada === jornada).map((p) => p.horaPartido));
 
   const botonVista = (v: Vista, texto: string) => (
     <button
@@ -124,15 +151,20 @@ export function RankingTabs() {
     <div>
       <h1 className="text-5xl text-gold-400">Posiciones</h1>
       <p className="mb-5 mt-2 text-cream/70">
-        {vista === "general"
-          ? "Los puntos acumulados de todos los participantes."
-          : `Los puntos de cada participante solo en la jornada ${jornada}.`}{" "}
-        Si hay empate, gana quien tenga más marcadores exactos.{vista === "jornada" && " Toca un jugador para ver sus marcadores."}
+        {vista === "liguilla"
+          ? "Las llaves de la liguilla (8 equipos, ida y vuelta) según la tabla de la fase regular."
+          : <>
+              {vista === "general"
+                ? "Los puntos acumulados de todos los participantes."
+                : `Los puntos de cada participante en ${nombreJornada(jornada).toLowerCase()}${fechas ? ` (${fechas})` : ""}.`}{" "}
+              Si hay empate, gana quien tenga más marcadores exactos.{vista === "jornada" && " Toca un jugador para ver sus marcadores."}
+            </>}
       </p>
 
       <div className="mb-4 flex gap-2">
         {botonVista("general", "General")}
         {botonVista("jornada", "Por jornada")}
+        {botonVista("liguilla", "Liguilla")}
       </div>
 
       {vista === "jornada" && (
@@ -149,16 +181,24 @@ export function RankingTabs() {
                   : "border-cream/30 text-cream hover:text-gold-400"
               }`}
             >
-              Jornada {j}
+              {nombreJornada(j)}
             </button>
           ))}
         </nav>
       )}
 
-      {vista === "general" ? (
-        <Tabla lista={ordenarRanking(jugadores)} etiqueta="Tabla de posiciones general" />
+      {vista === "liguilla" ? (
+        <LiguillaLlaves partidos={partidos} />
+      ) : vista === "general" ? (
+        <Tabla lista={ordenarRanking(totalesPorJugador(jugadores, partidos, predicciones))} etiqueta="Tabla de posiciones general" />
       ) : (
-        <TablaJornada key={jornada} lista={ordenarRanking(jugadoresDeJornada(jornada))} jornada={jornada} />
+        <TablaJornada
+          key={jornada}
+          lista={ordenarRanking(totalesPorJugador(jugadores, partidos, predicciones, jornada))}
+          jornada={jornada}
+          partidos={partidos}
+          predicciones={predicciones}
+        />
       )}
     </div>
   );

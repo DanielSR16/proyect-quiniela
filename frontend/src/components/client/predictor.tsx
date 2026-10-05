@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { guardarPrediccion } from "@/actions/predicciones";
 import { Equipo } from "@/components/client/equipo";
 
 function Contador({
@@ -47,12 +48,14 @@ function Contador({
 }
 
 export function Predictor({
+  partidoId,
   local,
   visitante,
   hora,
   inicio,
   inicial,
 }: {
+  partidoId: number;
   local: string;
   visitante: string;
   hora: string;
@@ -62,6 +65,8 @@ export function Predictor({
   const [golesLocal, setGolesLocal] = useState<number | null>(inicial?.local ?? null);
   const [golesVisitante, setGolesVisitante] = useState<number | null>(inicial?.visitante ?? null);
   const [estado, setEstado] = useState<"sin" | "guardado" | "editado">(inicial ? "guardado" : "sin");
+  const [error, setError] = useState<string | null>(null);
+  const [guardando, iniciarGuardado] = useTransition();
 
   const [cerrado, setCerrado] = useState(false);
   useEffect(() => {
@@ -96,12 +101,23 @@ export function Predictor({
 
       <button
         type="button"
-        disabled={cerrado || !completo || estado === "guardado"}
-        onClick={() => setEstado("guardado")}
+        disabled={cerrado || !completo || estado === "guardado" || guardando}
+        onClick={() =>
+          iniciarGuardado(async () => {
+            const r = await guardarPrediccion(partidoId, golesLocal!, golesVisitante!);
+            if (r.ok) {
+              setError(null);
+              setEstado("guardado");
+            } else {
+              setError(r.error);
+            }
+          })
+        }
         className="boton mt-3 w-full md:mt-4 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-forest-900"
       >
-        {cerrado ? "Cerrado: el partido ya inició" : estado === "guardado" ? "Guardado" : "Guardar pronóstico"}
+        {cerrado ? "Cerrado: el partido ya inició" : guardando ? "Guardando…" : estado === "guardado" ? "Guardado" : "Guardar pronóstico"}
       </button>
+      {error && <p role="alert" className="mt-2 text-center text-sm font-bold text-error">{error}</p>}
     </div>
   );
 }
