@@ -45,3 +45,20 @@ export function agruparPorJornada<T extends { jornada: number; horaPartido: stri
     .sort((a, b) => b[0] - a[0])
     .map(([j, ps]) => [j, ps.sort((a, b) => a.horaPartido.localeCompare(b.horaPartido))]);
 }
+
+// "12 – 15 oct" a partir de las horas de los partidos de una jornada (hora de México).
+// Si todos son el mismo día, solo "12 oct"; si cruzan de mes, "30 sep – 2 oct".
+export function rangoFechas(horas: string[]): string | null {
+  if (horas.length === 0) return null;
+  const orden = [...horas].sort();
+  const parte = (iso: string, opts: Intl.DateTimeFormatOptions) =>
+    new Date(iso).toLocaleString("es-MX", { timeZone: ZONA, ...opts });
+  const dia = (iso: string) => parte(iso, { day: "numeric" });
+  const mes = (iso: string) => parte(iso, { month: "short" }).replace(".", "");
+  const corto = (iso: string) => `${dia(iso)} ${mes(iso)}`;
+
+  const ini = orden[0];
+  const fin = orden[orden.length - 1];
+  if (corto(ini) === corto(fin)) return corto(ini);
+  return mes(ini) === mes(fin) ? `${dia(ini)} – ${corto(fin)}` : `${corto(ini)} – ${corto(fin)}`;
+}

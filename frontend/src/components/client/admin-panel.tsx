@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { actualizarPartido, crearPartido, eliminarPartido, guardarResultado } from "@/actions/partidos";
+import { actualizarPartido, cambiarEstadoJornada, crearPartido, eliminarPartido, guardarResultado } from "@/actions/partidos";
 import { Escudo } from "@/components/client/equipo";
-import { equipos } from "@/lib/equipos";
-import { agruparPorJornada, aInputLocal, desdeInputLocal, formatearCorto } from "@/lib/formato";
+import { agruparPorJornada, aInputLocal, desdeInputLocal, formatearCorto, rangoFechas } from "@/lib/formato";
 import type { Partido } from "@/lib/tipos";
 
+export interface OpcionEquipo {
+  id: number;
+  name: string;
+}
+
 interface DatosForm {
-  local: string;
-  visitante: string;
+  localId: string; // id del equipo, como valor de <select>
+  visitanteId: string;
   hora: string; // valor de datetime-local (hora de México)
   jornada: number;
 }
@@ -17,17 +21,19 @@ interface DatosForm {
 // Devuelve un mensaje de error, o null si todo salió bien.
 type Envio = (d: DatosForm) => Promise<string | null>;
 
-const JORNADAS = Array.from({ length: 30 }, (_, i) => i + 1);
+const JORNADAS = Array.from({ length: 17 }, (_, i) => i + 1);
 
 function SelectorEquipo({
   id,
   etiqueta,
+  equipos,
   valor,
   excluir,
   onChange,
 }: {
   id: string;
   etiqueta: string;
+  equipos: OpcionEquipo[];
   valor: string;
   excluir: string;
   onChange: (v: string) => void;
@@ -38,7 +44,7 @@ function SelectorEquipo({
       <select id={id} required value={valor} onChange={(e) => onChange(e.target.value)} className="campo">
         <option value="" disabled>Selecciona un equipo</option>
         {equipos.map((e) => (
-          <option key={e} value={e} disabled={e === excluir}>{e}</option>
+          <option key={e.id} value={String(e.id)} disabled={String(e.id) === excluir}>{e.name}</option>
         ))}
       </select>
     </div>
@@ -47,12 +53,16 @@ function SelectorEquipo({
 
 function FormularioPartido({
   idBase,
+  equipos,
+  jornadasTerminadas,
   inicial,
   textoEnvio,
   onEnviar,
   onCancelar,
 }: {
   idBase: string;
+  equipos: OpcionEquipo[];
+  jornadasTerminadas: number[];
   inicial?: DatosForm;
   textoEnvio: string;
   onEnviar: Envio;
@@ -68,10 +78,17 @@ function FormularioPartido({
     const ahora = aInputLocal(new Date().toISOString());
     if (!inicial || inicial.hora >= ahora) setMinimo(ahora);
   }, [inicial]);
-  const [local, setLocal] = useState(inicial?.local ?? "");
-  const [visitante, setVisitante] = useState(inicial?.visitante ?? "");
+  const [local, setLocal] = useState(inicial?.localId ?? "");
+  const [visitante, setVisitante] = useState(inicial?.visitanteId ?? "");
   const [hora, setHora] = useState(inicial?.hora ?? "");
-  const [jornada, setJornada] = useState(inicial ? String(inicial.jornada) : "");
+  const [elegida, setJornada] = useState(inicial ? String(inicial.jornada) : "");
+  // Al agregar, la jornada queda predefinida en la primera que sigue activa (si 1-9 están terminadas, la 10).
+  // Si lo elegido se termina mientras tanto, vuelve a la predefinida. Al editar se respeta la jornada del partido.
+  const predefinida = JORNADAS.find((j) => !jornadasTerminadas.includes(j));
+  const jornada =
+    inicial || (elegida !== "" && !jornadasTerminadas.includes(Number(elegida)))
+      ? elegida
+      : predefinida === undefined ? "" : String(predefinida);
 
   return (
     <form
@@ -79,7 +96,7 @@ function FormularioPartido({
       onSubmit={(e) => {
         e.preventDefault();
         iniciarEnvio(async () => {
-          const fallo = await onEnviar({ local, visitante, hora, jornada: Number(jornada) });
+          const fallo = await onEnviar({ localId: local, visitanteId: visitante, hora, jornada: Number(jornada) });
           setError(fallo);
           if (!fallo && !inicial) {
             setLocal("");
@@ -89,14 +106,16 @@ function FormularioPartido({
         });
       }}
     >
-      <SelectorEquipo id={`${idBase}-local`} etiqueta="Equipo local" valor={local} excluir={visitante} onChange={setLocal} />
-      <SelectorEquipo id={`${idBase}-visitante`} etiqueta="Equipo visitante" valor={visitante} excluir={local} onChange={setVisitante} />
+      <SelectorEquipo id={`${idBase}-local`} equipos={equipos} etiqueta="Equipo local" valor={local} excluir={visitante} onChange={setLocal} />
+      <SelectorEquipo id={`${idBase}-visitante`} equipos={equipos} etiqueta="Equipo visitante" valor={visitante} excluir={local} onChange={setVisitante} />
       <div>
         <label htmlFor={`${idBase}-jornada`} className="mb-1.5 block font-bold">Jornada</label>
         <select id={`${idBase}-jornada`} required value={jornada} onChange={(e) => setJornada(e.target.value)} className="campo">
           <option value="" disabled>Selecciona una jornada</option>
           {JORNADAS.map((j) => (
-            <option key={j} value={j}>Jornada {j}</option>
+            <option key={j} value={j} disabled={jornadasTerminadas.includes(j) && j !== inicial?.jornada}>
+              Jornada {j}{jornadasTerminadas.includes(j) ? " (terminada)" : ""}
+            </option>
           ))}
         </select>
       </div>
@@ -129,6 +148,62 @@ function FormularioPartido({
   );
 }
 
+function ControlJornadas({ torneoId, terminadas, partidos }: { torneoId: number; terminadas: number[]; partidos: Partido[] }) {
+  const [pendiente, iniciar] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  const cambiar = (numero: number, terminada: boolean) =>
+    iniciar(async () => {
+      const r = await cambiarEstadoJornada(torneoId, numero, terminada);
+      setError(r.ok ? null : r.error);
+    });
+
+  return (
+    <details className="ticket group" aria-labelledby="jornadas">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+        <h2 id="jornadas" className="etiqueta !font-sans">
+          Jornadas
+          {terminadas.length > 0 && (
+            <span className="ml-2 font-normal normal-case tracking-normal text-muted">
+              · {terminadas.length} {terminadas.length === 1 ? "terminada" : "terminadas"}
+            </span>
+          )}
+        </h2>
+        <span aria-hidden className="text-muted transition-transform group-open:rotate-180">▾</span>
+      </summary>
+      <p className="mb-4 mt-3 text-sm text-muted">
+        Una jornada terminada no admite partidos nuevos hasta que la actives de nuevo.
+      </p>
+      <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-6">
+        {JORNADAS.map((j) => {
+          const terminada = terminadas.includes(j);
+          return (
+            <li key={j}>
+              <button
+                type="button"
+                disabled={pendiente}
+                onClick={() => cambiar(j, !terminada)}
+                aria-pressed={terminada}
+                title={terminada ? "Terminada: toca para activarla" : "Activa: toca para marcarla como terminada"}
+                className={`w-full rounded border-2 px-2 py-2 text-sm transition-colors disabled:opacity-60 ${
+                  terminada ? "border-trazo bg-trazo/20 text-muted" : "border-forest-900 font-bold"
+                }`}
+              >
+                <span className="block font-display text-xl">J{j}</span>
+                <span className="block text-xs uppercase tracking-widest">{terminada ? "Terminada" : "Activa"}</span>
+                <span className="block text-xs font-normal normal-case tracking-normal text-muted">
+                  {rangoFechas(partidos.filter((p) => p.jornada === j).map((p) => p.horaPartido)) ?? "Sin partidos"}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {error && <p role="alert" className="mt-3 font-bold text-error">{error}</p>}
+    </details>
+  );
+}
+
 function FilaResultado({ partido }: { partido: Partido }) {
   const [local, setLocal] = useState(partido.resultadoLocal === null ? "" : String(partido.resultadoLocal));
   const [visitante, setVisitante] = useState(partido.resultadoVisitante === null ? "" : String(partido.resultadoVisitante));
@@ -157,7 +232,19 @@ function FilaResultado({ partido }: { partido: Partido }) {
   );
 }
 
-export function AdminPanel({ partidos }: { partidos: Partido[] }) {
+export function AdminPanel({
+  torneoId,
+  torneoNombre,
+  partidos,
+  equipos,
+  jornadasTerminadas,
+}: {
+  torneoId: number;
+  torneoNombre: string;
+  partidos: Partido[];
+  equipos: OpcionEquipo[];
+  jornadasTerminadas: number[];
+}) {
   const [editando, setEditando] = useState<number | null>(null);
   const [eliminando, setEliminando] = useState<number | null>(null);
   const [borrando, iniciarBorrado] = useTransition();
@@ -166,8 +253,9 @@ export function AdminPanel({ partidos }: { partidos: Partido[] }) {
   const grupos = agruparPorJornada(partidos);
 
   const aDatos = (d: DatosForm) => ({
-    local: d.local,
-    visitante: d.visitante,
+    localId: Number(d.localId),
+    visitanteId: Number(d.visitanteId),
+    torneoId,
     jornada: d.jornada,
     horaPartido: desdeInputLocal(d.hora),
   });
@@ -197,23 +285,36 @@ export function AdminPanel({ partidos }: { partidos: Partido[] }) {
   return (
     <>
       <section className="ticket" aria-labelledby="nuevo">
-        <h2 id="nuevo" className="etiqueta !font-sans mb-4">Agregar partido</h2>
-        <FormularioPartido idBase="nuevo" textoEnvio="Agregar partido" onEnviar={agregar} />
+        <h2 id="nuevo" className="etiqueta !font-sans mb-4">Agregar partido · {torneoNombre}</h2>
+        <FormularioPartido idBase="nuevo" equipos={equipos} jornadasTerminadas={jornadasTerminadas} textoEnvio="Agregar partido" onEnviar={agregar} />
       </section>
+
+      <ControlJornadas torneoId={torneoId} terminadas={jornadasTerminadas} partidos={partidos} />
 
       <section className="ticket" aria-labelledby="lista">
         <h2 id="lista" className="etiqueta !font-sans">Partidos y resultados</h2>
         {partidos.length === 0 && <p className="fila text-muted">No hay partidos.</p>}
         {grupos.map(([jornada, partidosJornada]) => (
-          <div key={jornada}>
-            <h3 className="mt-5 border-b-2 border-forest-900 pb-1 font-display text-2xl">Jornada {jornada}</h3>
+          <details key={jornada} className="group mt-3">
+            <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3 border-b-2 border-forest-900 pb-1 [&::-webkit-details-marker]:hidden">
+              <h3 className="font-display text-2xl">Jornada {jornada}</h3>
+              <span className="flex items-baseline gap-3 font-sans text-sm text-muted">
+                <span>
+                  {rangoFechas(partidosJornada.map((p) => p.horaPartido))} · {partidosJornada.length}{" "}
+                  {partidosJornada.length === 1 ? "partido" : "partidos"}
+                </span>
+                <span aria-hidden className="transition-transform group-open:rotate-180">▾</span>
+              </span>
+            </summary>
             {partidosJornada.map((p) =>
           editando === p.id ? (
             <div key={p.id} className="fila">
               <p className="etiqueta !font-sans mb-3">Editando partido</p>
               <FormularioPartido
                 idBase={`editar-${p.id}`}
-                inicial={{ local: p.local, visitante: p.visitante, hora: aInputLocal(p.horaPartido), jornada: p.jornada }}
+                equipos={equipos}
+                jornadasTerminadas={jornadasTerminadas}
+                inicial={{ localId: String(p.localId), visitanteId: String(p.visitanteId), hora: aInputLocal(p.horaPartido), jornada: p.jornada }}
                 textoEnvio="Guardar cambios"
                 onEnviar={(d) => actualizar(p.id, d)}
                 onCancelar={() => setEditando(null)}
@@ -249,7 +350,7 @@ export function AdminPanel({ partidos }: { partidos: Partido[] }) {
             </div>
           ),
             )}
-          </div>
+          </details>
         ))}
       </section>
     </>

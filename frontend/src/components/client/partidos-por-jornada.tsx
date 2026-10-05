@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Equipo } from "@/components/client/equipo";
 import { Predictor } from "@/components/client/predictor";
-import { formatearCorto } from "@/lib/formato";
+import { formatearCorto, rangoFechas } from "@/lib/formato";
 import type { Partido, Prediccion } from "@/lib/tipos";
 
 export function PartidosPorJornada({
@@ -24,7 +24,12 @@ export function PartidosPorJornada({
   return (
     <div>
       <h1 className="text-5xl text-gold-400">Jornada {jornada}</h1>
-      <p className="mb-5 mt-2 text-cream/70">Puedes cambiar tu pronóstico hasta la hora del partido.</p>
+      <p className="mb-5 mt-2 text-cream/70">
+        {rangoFechas(delaJornada.map((p) => p.horaPartido))
+          ? `Del ${rangoFechas(delaJornada.map((p) => p.horaPartido))}. `
+          : ""}
+        Puedes cambiar tu pronóstico hasta la hora del partido.
+      </p>
 
       <nav aria-label="Jornadas" className="-mx-5 mb-6 flex gap-2 overflow-x-auto px-5 pb-2">
         {jornadas.map((j) => (

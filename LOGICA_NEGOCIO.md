@@ -42,7 +42,7 @@ Complementa a `PROJECT.md` (visión general, stack). Reúne las **reglas de nego
 - Cada partido pertenece a una **jornada** (`jornada`, entero ≥ 1). El admin la captura al crear o editar un partido.
 - Los partidos se agrupan por jornada en: pantalla de pronósticos (selector de jornada; abre por defecto en la jornada más reciente, la de número más alto), historial (con subtotal de puntos por jornada) y panel admin.
 - El **ranking sigue siendo global y acumulativo**; las jornadas solo agrupan, no reinician puntos.
-- Pendiente de confirmar: rango válido de jornadas (el frontend limita a 1–30) y si hay fases especiales (liguilla).
+- Pendiente de confirmar: rango válido de jornadas (17 por torneo) y si hay fases especiales (liguilla).
 
 ### Admin: partidos
 - Crear, editar y eliminar partidos: equipo local, equipo visitante (**deben ser distintos**), jornada, fecha y hora (`horaPartido`, que también es la hora de cierre).

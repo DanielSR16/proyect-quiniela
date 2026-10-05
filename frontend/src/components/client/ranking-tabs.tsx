@@ -8,6 +8,7 @@ import {
   type JugadorPosicionado,
   type PrediccionDeJugador,
 } from "@/lib/ranking";
+import { rangoFechas } from "@/lib/formato";
 import type { Partido } from "@/lib/tipos";
 
 type Vista = "general" | "jornada";
@@ -127,6 +128,8 @@ export function RankingTabs({
   // Por defecto, siempre la jornada más reciente (la de número más alto).
   const [jornada, setJornada] = useState(jornadas[jornadas.length - 1] ?? 1);
 
+  const fechas = rangoFechas(partidos.filter((p) => p.jornada === jornada).map((p) => p.horaPartido));
+
   const botonVista = (v: Vista, texto: string) => (
     <button
       type="button"
@@ -148,7 +151,7 @@ export function RankingTabs({
       <p className="mb-5 mt-2 text-cream/70">
         {vista === "general"
           ? "Los puntos acumulados de todos los participantes."
-          : `Los puntos de cada participante solo en la jornada ${jornada}.`}{" "}
+          : `Los puntos de cada participante solo en la jornada ${jornada}${fechas ? ` (${fechas})` : ""}.`}{" "}
         Si hay empate, gana quien tenga más marcadores exactos.{vista === "jornada" && " Toca un jugador para ver sus marcadores."}
       </p>
 

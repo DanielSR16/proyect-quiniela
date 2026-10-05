@@ -10,7 +10,9 @@ export type Resultado = { ok: true } | { ok: false; error: string };
 // Modelos que usa la interfaz (los nombres de columnas de la base están en inglés).
 export interface Partido {
   id: number;
+  localId: number;
   local: string;
+  visitanteId: number;
   visitante: string;
   jornada: number;
   horaPartido: string; // ISO con zona
@@ -40,11 +42,18 @@ export interface Usuario {
   bloqueado: boolean;
 }
 
-export function aPartido(fila: Tablas["matches"]["Row"]): Partido {
+// Consulta de partidos con el nombre de cada equipo (se relacionan por id).
+export const PARTIDO_SELECT = "*, home:teams!home_team_id(name), away:teams!away_team_id(name)";
+
+export type FilaPartido = Tablas["matches"]["Row"] & { home: { name: string } | null; away: { name: string } | null };
+
+export function aPartido(fila: FilaPartido): Partido {
   return {
     id: fila.id,
-    local: fila.home_team,
-    visitante: fila.away_team,
+    localId: fila.home_team_id,
+    local: fila.home?.name ?? "",
+    visitanteId: fila.away_team_id,
+    visitante: fila.away?.name ?? "",
     jornada: fila.round,
     horaPartido: fila.kickoff_at,
     resultadoLocal: fila.home_score,

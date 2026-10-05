@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { equipos } from "@/lib/equipos";
 import { errorSiNoAdmin } from "@/lib/sesion";
 import { createClient } from "@/lib/supabase/server";
 import type { Resultado } from "@/lib/tipos";
@@ -9,16 +8,17 @@ import type { Resultado } from "@/lib/tipos";
 // Todas estas acciones las puede ejecutar solo un admin: se comprueba aquí y además lo exige RLS en la base.
 
 export interface DatosPartido {
-  local: string;
-  visitante: string;
+  torneoId: number;
+  localId: number;
+  visitanteId: number;
   jornada: number;
   horaPartido: string; // ISO con zona
 }
 
 function validarPartido(d: DatosPartido): string | null {
-  if (!equipos.includes(d.local) || !equipos.includes(d.visitante)) return "Ese equipo no está en la lista";
-  if (d.local === d.visitante) return "El local y el visitante deben ser distintos";
-  if (!Number.isInteger(d.jornada) || d.jornada < 1 || d.jornada > 30) return "La jornada debe ser del 1 al 30";
+  if (!Number.isInteger(d.localId) || !Number.isInteger(d.visitanteId)) return "Selecciona los dos equipos";
+  if (d.localId === d.visitanteId) return "El local y el visitante deben ser distintos";
+  if (!Number.isInteger(d.jornada) || d.jornada < 1 || d.jornada > 17) return "La jornada debe ser del 1 al 17";
   if (Number.isNaN(new Date(d.horaPartido).getTime())) return "Hora inválida";
   return null;
 }
@@ -36,9 +36,12 @@ export async function crearPartido(d: DatosPartido): Promise<Resultado> {
   if (aMinuto(new Date(d.horaPartido).getTime()) < aMinuto(Date.now())) return { ok: false, error: MENSAJE_PASADO };
 
   const supabase = await createClient();
+  const { data: jornada } = await supabase.from("rounds").select("finished").eq("tournament_id", d.torneoId).eq("number", d.jornada).maybeSingle();
+  if (jornada?.finished) return { ok: false, error: `La jornada ${d.jornada} está terminada; actívala para agregar partidos` };
+
   const { error: fallo } = await supabase
     .from("matches")
-    .insert({ round: d.jornada, home_team: d.local, away_team: d.visitante, kickoff_at: d.horaPartido });
+    .insert({ tournament_id: d.torneoId, round: d.jornada, home_team_id: d.localId, away_team_id: d.visitanteId, kickoff_at: d.horaPartido });
   if (fallo) return { ok: false, error: "No se pudo agregar el partido" };
 
   refrescar();
@@ -53,8 +56,12 @@ export async function actualizarPartido(id: number, d: DatosPartido): Promise<Re
 
   // La misma regla al editar, pero solo si la hora cambia: corregir equipos o jornada de un partido
   // que ya empezó sigue permitido dejando su hora como está.
-  const { data: actual } = await supabase.from("matches").select("kickoff_at").eq("id", id).maybeSingle();
+  const { data: actual } = await supabase.from("matches").select("kickoff_at, round, tournament_id").eq("id", id).maybeSingle();
   if (!actual) return { ok: false, error: "Ese partido no existe" };
+  if (d.jornada !== actual.round) {
+    const { data: jornada } = await supabase.from("rounds").select("finished").eq("tournament_id", actual.tournament_id).eq("number", d.jornada).maybeSingle();
+    if (jornada?.finished) return { ok: false, error: `La jornada ${d.jornada} está terminada; actívala para mover partidos a ella` };
+  }
   const nueva = aMinuto(new Date(d.horaPartido).getTime());
   if (nueva !== aMinuto(new Date(actual.kickoff_at).getTime()) && nueva < aMinuto(Date.now())) {
     return { ok: false, error: MENSAJE_PASADO };
@@ -62,7 +69,7 @@ export async function actualizarPartido(id: number, d: DatosPartido): Promise<Re
 
   const { data, error: fallo } = await supabase
     .from("matches")
-    .update({ round: d.jornada, home_team: d.local, away_team: d.visitante, kickoff_at: d.horaPartido })
+    .update({ round: d.jornada, home_team_id: d.localId, away_team_id: d.visitanteId, kickoff_at: d.horaPartido })
     .eq("id", id)
     .select("id");
   if (fallo) return { ok: false, error: "No se pudo guardar el partido" };
@@ -101,6 +108,21 @@ export async function guardarResultado(id: number, local: number, visitante: num
     .select("id");
   if (fallo) return { ok: false, error: "No se pudo guardar el resultado" };
   if (!data?.length) return { ok: false, error: "Ese partido no existe" };
+
+  refrescar();
+  return { ok: true };
+}
+
+// Una jornada terminada no admite partidos nuevos (lo exige también un trigger en la base) hasta reactivarla.
+export async function cambiarEstadoJornada(torneoId: number, numero: number, terminada: boolean): Promise<Resultado> {
+  const error = await errorSiNoAdmin();
+  if (error) return { ok: false, error };
+  if (!Number.isInteger(numero) || numero < 1 || numero > 17) return { ok: false, error: "La jornada debe ser del 1 al 17" };
+
+  const supabase = await createClient();
+  const { data, error: fallo } = await supabase.from("rounds").update({ finished: terminada }).eq("tournament_id", torneoId).eq("number", numero).select("number");
+  if (fallo) return { ok: false, error: "No se pudo cambiar la jornada" };
+  if (!data?.length) return { ok: false, error: "Esa jornada no existe" };
 
   refrescar();
   return { ok: true };

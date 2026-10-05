@@ -170,7 +170,7 @@ Los usuarios seleccionan el resultado exacto de cada partido (ej: 2-1, 3-0, etc.
 
 - **Frontend:** React 19 + Next.js 15 + Tailwind CSS v4 ✅ (Server Components + Server Actions)
 - **Backend:** Supabase (sin servidor propio): Postgres + Auth + RLS + triggers
-- **Base de datos:** Supabase Postgres. Esquema en `supabase/migrations/` (tablas `profiles`, `matches`, `predictions`)
+- **Base de datos:** Supabase Postgres. Esquema en `supabase/migrations/` (tablas `profiles`, `teams`, `matches`, `predictions`; diagrama en `docs/UML_DB.md`)
 - **Auth:** Supabase Auth (correo + contraseña); el admin crea las cuentas (registro público desactivado)
 
 ## 🚀 Fase Actual: Frontend

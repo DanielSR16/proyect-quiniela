@@ -10,38 +10,70 @@ export type Database = {
       matches: {
         Row: {
           away_score: number | null;
-          away_team: string;
+          away_team_id: number;
           created_at: string;
           home_score: number | null;
-          home_team: string;
+          home_team_id: number;
           id: number;
           kickoff_at: string;
           round: number;
           status: string;
+          tournament_id: number;
         };
         Insert: {
           away_score?: number | null;
-          away_team: string;
+          away_team_id: number;
           created_at?: string;
           home_score?: number | null;
-          home_team: string;
+          home_team_id: number;
           id?: never;
           kickoff_at: string;
           round: number;
           status?: string;
+          tournament_id: number;
         };
         Update: {
           away_score?: number | null;
-          away_team?: string;
+          away_team_id?: number;
           created_at?: string;
           home_score?: number | null;
-          home_team?: string;
+          home_team_id?: number;
           id?: never;
           kickoff_at?: string;
           round?: number;
           status?: string;
+          tournament_id?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "matches_away_team_id_fkey";
+            columns: ["away_team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "matches_tournament_id_round_fkey";
+            columns: ["tournament_id", "round"];
+            isOneToOne: false;
+            referencedRelation: "rounds";
+            referencedColumns: ["tournament_id", "number"];
+          },
+          {
+            foreignKeyName: "matches_tournament_id_fkey";
+            columns: ["tournament_id"];
+            isOneToOne: false;
+            referencedRelation: "tournaments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "matches_home_team_id_fkey";
+            columns: ["home_team_id"];
+            isOneToOne: false;
+            referencedRelation: "teams";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       predictions: {
         Row: {
@@ -112,6 +144,86 @@ export type Database = {
           id?: string;
           name?: string;
           role?: string;
+        };
+        Relationships: [];
+      };
+      rounds: {
+        Row: {
+          finished: boolean;
+          number: number;
+          tournament_id: number;
+        };
+        Insert: {
+          finished?: boolean;
+          number: number;
+          tournament_id: number;
+        };
+        Update: {
+          finished?: boolean;
+          number?: number;
+          tournament_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "rounds_tournament_id_fkey";
+            columns: ["tournament_id"];
+            isOneToOne: false;
+            referencedRelation: "tournaments";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      teams: {
+        Row: {
+          created_at: string;
+          id: number;
+          logo_url: string | null;
+          name: string;
+          short_name: string;
+          slug: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: never;
+          logo_url?: string | null;
+          name: string;
+          short_name: string;
+          slug: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: never;
+          logo_url?: string | null;
+          name?: string;
+          short_name?: string;
+          slug?: string;
+        };
+        Relationships: [];
+      };
+      tournaments: {
+        Row: {
+          created_at: string;
+          id: number;
+          is_active: boolean;
+          kind: string;
+          name: string;
+          year: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: never;
+          is_active?: boolean;
+          kind: string;
+          name: string;
+          year: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: never;
+          is_active?: boolean;
+          kind?: string;
+          name?: string;
+          year?: number;
         };
         Relationships: [];
       };
