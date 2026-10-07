@@ -74,8 +74,8 @@ function FormularioUsuario({
             type={verContrasena ? "text" : "password"}
             autoComplete="new-password"
             required={esNuevo}
-            minLength={6}
-            placeholder={esNuevo ? "Mínimo 6 caracteres" : "Déjala vacía para no cambiarla"}
+            minLength={8}
+            placeholder={esNuevo ? "Mínimo 8 caracteres" : "Déjala vacía para no cambiarla"}
             value={contrasena}
             onChange={(e) => setContrasena(e.target.value)}
             className="campo"
