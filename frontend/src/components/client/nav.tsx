@@ -1,7 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cerrarSesion } from "@/actions/auth";
 
 const iconProps = {
   width: 22,
@@ -59,12 +59,6 @@ const enlaces = [
   },
 ];
 
-const iconoSalir = (
-  <svg {...iconProps}>
-    <path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H10" />
-  </svg>
-);
-
 export function Nav({ esAdmin }: { esAdmin: boolean }) {
   const ruta = usePathname();
   const visibles = enlaces.filter((e) => e.href !== "/admin" || esAdmin);
@@ -79,7 +73,7 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
         {visibles.map((e) => {
           const activo = ruta.startsWith(e.href);
           return (
-            <a
+            <Link
               key={e.href}
               href={e.href}
               aria-current={activo ? "page" : undefined}
@@ -90,17 +84,9 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
               }`}
             >
               {e.label}
-            </a>
+            </Link>
           );
         })}
-        <form action={cerrarSesion} className="flex flex-1 lg:flex-none">
-          <button
-            type="submit"
-            className="flex-1 rounded-full px-4 py-2 text-center text-cream transition-colors hover:bg-forest-700 hover:text-gold-400 lg:flex-none"
-          >
-            Cerrar sesión
-          </button>
-        </form>
       </nav>
 
       {/* Móvil: barra inferior tipo app */}
@@ -113,7 +99,7 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
             const activo = ruta.startsWith(e.href);
             return (
               <li key={e.href} className="flex-1">
-                <a
+                <Link
                   href={e.href}
                   aria-current={activo ? "page" : undefined}
                   className={`flex flex-col items-center gap-1 px-1 pb-2 pt-2.5 text-[11px] leading-none ${
@@ -128,18 +114,10 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
                     {e.icono}
                   </span>
                   <span className={activo ? "font-bold" : ""}>{e.corto}</span>
-                </a>
+                </Link>
               </li>
             );
           })}
-          <li className="flex-1">
-            <form action={cerrarSesion}>
-              <button type="submit" className="flex w-full flex-col items-center gap-1 px-1 pb-2 pt-2.5 text-[11px] leading-none text-cream/70">
-                <span className="flex h-8 w-12 items-center justify-center rounded-full">{iconoSalir}</span>
-                <span>Salir</span>
-              </button>
-            </form>
-          </li>
         </ul>
       </nav>
     </>

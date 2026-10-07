@@ -111,3 +111,15 @@
     @apply rounded-sm bg-gold-400 px-5 py-3 text-base font-bold text-forest-900 transition-colors hover:bg-gold-500 active:translate-y-px;
   }
 }
+
+/* El navegador (Edge/Safari) agrega su propio ojito en los campos de contraseña; la app ya trae el suyo. */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+input::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  position: absolute;
+  right: 0;
+}

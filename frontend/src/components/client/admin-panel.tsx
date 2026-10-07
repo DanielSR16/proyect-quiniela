@@ -71,6 +71,12 @@ function FormularioPartido({
 }) {
   const [enviando, iniciarEnvio] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [exito, setExito] = useState<string | null>(null);
+  useEffect(() => {
+    if (!exito) return;
+    const t = setTimeout(() => setExito(null), 4000);
+    return () => clearTimeout(t);
+  }, [exito]);
   // La hora mínima es "ahora". Se calcula tras montar para no desajustar el HTML del servidor.
   // Si el partido que se edita ya empezó, no se pone mínimo para poder guardar otros cambios con su hora
   // actual; el servidor igual rechaza cambiarla a una hora pasada.
@@ -99,7 +105,9 @@ function FormularioPartido({
         iniciarEnvio(async () => {
           const fallo = await onEnviar({ localId: local, visitanteId: visitante, hora, jornada: Number(jornada) });
           setError(fallo);
+          setExito(null);
           if (!fallo && !inicial) {
+            setExito("Partido agregado");
             setLocal("");
             setVisitante("");
             setHora("");
@@ -135,6 +143,7 @@ function FormularioPartido({
         />
       </div>
       {error && <p role="alert" className="font-bold text-error sm:col-span-2">{error}</p>}
+      {exito && <p role="status" className="font-bold text-forest-700 sm:col-span-2">{exito}</p>}
       <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row">
         <button type="submit" disabled={enviando} className="boton disabled:opacity-60 sm:flex-1">
           {enviando ? "Guardando…" : textoEnvio}

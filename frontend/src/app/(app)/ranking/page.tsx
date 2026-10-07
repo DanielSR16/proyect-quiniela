@@ -6,17 +6,19 @@ import { cargarTorneos } from "@/lib/torneos";
 import { PARTIDO_SELECT, aPartido, aPrediccion } from "@/lib/tipos";
 
 export default async function RankingPage({ searchParams }: { searchParams: Promise<{ torneo?: string }> }) {
-  await exigirSesion();
   const supabase = await createClient();
-  const { torneos, actual } = await cargarTorneos((await searchParams).torneo);
+  // Perfiles y pronósticos no dependen del torneo: arrancan junto con la sesión y los torneos.
+  // RLS solo deja ver los pronósticos ajenos de partidos ya cerrados, que son los únicos con puntos.
+  const perfilesP = supabase.from("profiles").select("id, name");
+  const prediccionesP = supabase.from("predictions").select("user_id, match_id, home_goals, away_goals, points").not("points", "is", null);
+  const [, { torneos, actual }] = await Promise.all([exigirSesion(), searchParams.then((q) => cargarTorneos(q.torneo))]);
   if (!actual) return <p className="text-cream/70">Todavía no hay torneos.</p>;
 
-  // RLS solo deja ver los pronósticos ajenos de partidos ya cerrados, que son los únicos con puntos.
   // Los pronósticos de otros torneos no suman: el ranking solo cuenta los partidos de este torneo.
   const [perfiles, partidos, predicciones] = await Promise.all([
-    supabase.from("profiles").select("id, name"),
+    perfilesP,
     supabase.from("matches").select(PARTIDO_SELECT).eq("tournament_id", actual.id),
-    supabase.from("predictions").select("user_id, match_id, home_goals, away_goals, points").not("points", "is", null),
+    prediccionesP,
   ]);
   if (perfiles.error) throw new Error(perfiles.error.message);
   if (partidos.error) throw new Error(partidos.error.message);
