@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 
 export interface Torneo {
@@ -8,7 +9,7 @@ export interface Torneo {
 }
 
 // Torneos disponibles y el que se está viendo: ?torneo=<id> si es válido; si no, el activo; si no, el más reciente.
-export async function cargarTorneos(torneoParam?: string): Promise<{ torneos: Torneo[]; actual: Torneo | null }> {
+export const cargarTorneos = cache(async (torneoParam?: string): Promise<{ torneos: Torneo[]; actual: Torneo | null }> => {
   const supabase = await createClient();
   const { data, error } = await supabase.from("tournaments").select("id, name, is_active").order("id", { ascending: false });
   if (error) throw new Error(error.message);
@@ -17,4 +18,4 @@ export async function cargarTorneos(torneoParam?: string): Promise<{ torneos: To
   const actual =
     torneos.find((t) => String(t.id) === torneoParam) ?? torneos.find((t) => t.activo) ?? torneos[0] ?? null;
   return { torneos, actual };
-}
+});

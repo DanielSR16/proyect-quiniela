@@ -34,3 +34,9 @@ yarn-error.log*
 .claude/
 .agents/
 skills-lock.json
+
+# Capturas y logs de las pruebas con Playwright MCP
+.playwright-mcp/
+
+# Configuración local de MCP (apunta al proyecto de producción)
+.mcp.json

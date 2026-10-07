@@ -20,7 +20,7 @@ function validar(d: DatosUsuario, creando: boolean): string | null {
   if (nombre.length < 1 || nombre.length > 60) return "Escribe el nombre (máximo 60 caracteres)";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.correo.trim())) return "Correo inválido";
   if (d.rol !== "admin" && d.rol !== "player") return "Rol inválido";
-  if ((creando || d.password) && (d.password ?? "").length < 6) return "La contraseña debe tener al menos 6 caracteres";
+  if ((creando || d.password) && (d.password ?? "").length < 8) return "La contraseña debe tener al menos 8 caracteres";
   return null;
 }
 

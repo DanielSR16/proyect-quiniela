@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getSesion } from "@/lib/sesion";
 import { createClient } from "@/lib/supabase/server";
 import type { Resultado } from "@/lib/tipos";
@@ -13,7 +14,8 @@ export async function guardarPrediccion(partidoId: number, local: number, visita
   if (!Number.isInteger(partidoId) || !golesValidos(local) || !golesValidos(visitante)) {
     return { ok: false, error: "Los goles deben ser números del 0 al 20" };
   }
-  if (!(await getSesion())) return { ok: false, error: "Tu sesión expiró, vuelve a entrar" };
+  // Sesión vencida o revocada (por ejemplo, abierta en otro dispositivo): cierra y vuelve al login.
+  if (!(await getSesion())) redirect("/auth/signout");
 
   const supabase = await createClient();
   const { error } = await supabase

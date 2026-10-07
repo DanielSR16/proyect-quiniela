@@ -6,9 +6,12 @@ import { cargarTorneos } from "@/lib/torneos";
 import { PARTIDO_SELECT, aPartido, aPrediccion } from "@/lib/tipos";
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ torneo?: string }> }) {
-  const sesion = await exigirSesion();
-  const supabase = await createClient();
-  const { torneos, actual } = await cargarTorneos((await searchParams).torneo);
+  // Sesión, cliente y torneos en paralelo: cada consulta a Supabase cuesta un viaje de red.
+  const [sesion, supabase, { torneos, actual }] = await Promise.all([
+    exigirSesion(),
+    createClient(),
+    searchParams.then((q) => cargarTorneos(q.torneo)),
+  ]);
   if (!actual) return <p className="text-cream/70">Todavía no hay torneos.</p>;
 
   const [partidos, predicciones] = await Promise.all([

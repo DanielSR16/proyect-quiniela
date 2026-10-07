@@ -32,12 +32,13 @@ export async function exigirSesion(): Promise<Sesion> {
 
 export async function exigirAdmin(): Promise<Sesion> {
   const sesion = await exigirSesion();
-  if (sesion.rol !== "admin") redirect("/partidos");
+  if (sesion.rol !== "admin") redirect("/partidos?aviso=admin");
   return sesion;
 }
 
 // Para Server Actions (son endpoints públicos): devuelve un mensaje de error si quien llama no es admin.
 export async function errorSiNoAdmin(): Promise<string | null> {
   const sesion = await getSesion();
-  return sesion?.rol === "admin" ? null : "Solo el administrador puede hacer esto";
+  if (!sesion) redirect("/auth/signout"); // sesión vencida o revocada
+  return sesion.rol === "admin" ? null : "Solo el administrador puede hacer esto";
 }

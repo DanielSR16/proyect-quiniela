@@ -6,9 +6,12 @@ import { cargarTorneos } from "@/lib/torneos";
 import { PARTIDO_SELECT, aPartido } from "@/lib/tipos";
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ torneo?: string }> }) {
-  await exigirAdmin();  // el layout también lo comprueba, pero cada página debe protegerse sola
-  const supabase = await createClient();
-  const { torneos, actual } = await cargarTorneos((await searchParams).torneo);
+  // El layout también comprueba el rol, pero cada página debe protegerse sola.
+  const [, supabase, { torneos, actual }] = await Promise.all([
+    exigirAdmin(),
+    createClient(),
+    searchParams.then((q) => cargarTorneos(q.torneo)),
+  ]);
   if (!actual) return <p className="text-cream/70">Crea primero un torneo en la pestaña Torneos.</p>;
 
   const [partidos, equipos, jornadas] = await Promise.all([

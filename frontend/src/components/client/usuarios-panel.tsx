@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { cambiarBloqueo, crearUsuario, editarUsuario } from "@/actions/usuarios";
 import type { Rol, Usuario } from "@/lib/tipos";
 
@@ -74,8 +74,8 @@ function FormularioUsuario({
             type={verContrasena ? "text" : "password"}
             autoComplete="new-password"
             required={esNuevo}
-            minLength={6}
-            placeholder={esNuevo ? "Mínimo 6 caracteres" : "Déjala vacía para no cambiarla"}
+            minLength={8}
+            placeholder={esNuevo ? "Mínimo 8 caracteres" : "Déjala vacía para no cambiarla"}
             value={contrasena}
             onChange={(e) => setContrasena(e.target.value)}
             className="campo"
@@ -122,16 +122,28 @@ export function UsuariosPanel({ usuarios }: { usuarios: Usuario[] }) {
   const [bloqueando, setBloqueando] = useState<string | null>(null);
   const [cambiando, iniciarCambio] = useTransition();
   const [errorBloqueo, setErrorBloqueo] = useState<string | null>(null);
+  const [exito, setExito] = useState<string | null>(null);
+  useEffect(() => {
+    if (!exito) return;
+    const t = setTimeout(() => setExito(null), 4000);
+    return () => clearTimeout(t);
+  }, [exito]);
 
   const guardar: Guardar = async (u, contrasena) => {
     const r = await editarUsuario(u.id, { nombre: u.nombre, correo: u.correo, rol: u.rol, password: contrasena });
-    if (r.ok) setEditando(null);
+    if (r.ok) {
+      setEditando(null);
+      setExito(`Cambios guardados: ${u.nombre}`);
+    }
     return r.ok ? null : r.error;
   };
 
   const agregar: Guardar = async (u, contrasena) => {
     const r = await crearUsuario({ nombre: u.nombre, correo: u.correo, rol: u.rol, password: contrasena });
-    if (r.ok) setAgregando(false);
+    if (r.ok) {
+      setAgregando(false);
+      setExito(`Usuario creado: ${u.nombre}`);
+    }
     return r.ok ? null : r.error;
   };
 
@@ -141,6 +153,7 @@ export function UsuariosPanel({ usuarios }: { usuarios: Usuario[] }) {
       if (r.ok) {
         setBloqueando(null);
         setErrorBloqueo(null);
+        setExito(bloqueado ? "Usuario bloqueado" : "Usuario desbloqueado");
       } else {
         setErrorBloqueo(r.error);
       }
@@ -158,6 +171,7 @@ export function UsuariosPanel({ usuarios }: { usuarios: Usuario[] }) {
           </button>
         )}
       </div>
+      {exito && <p role="status" className="mt-3 font-bold text-forest-700">{exito}</p>}
       {agregando && (
         <div className="fila">
           <p className="etiqueta !font-sans mb-3">Nuevo usuario</p>

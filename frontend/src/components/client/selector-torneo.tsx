@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Torneo } from "@/lib/torneos";
 
 // Enlaces ?torneo=<id>: la página (servidor) vuelve a cargar con los datos de ese torneo.
@@ -5,7 +6,7 @@ export function SelectorTorneo({ torneos, actual }: { torneos: Torneo[]; actual:
   return (
     <nav aria-label="Torneos" className="-mx-5 mb-4 flex gap-2 overflow-x-auto px-5 pb-1">
       {torneos.map((t) => (
-        <a
+        <Link
           key={t.id}
           href={`?torneo=${t.id}`}
           aria-current={t.id === actual.id ? "true" : undefined}
@@ -17,7 +18,7 @@ export function SelectorTorneo({ torneos, actual }: { torneos: Torneo[]; actual:
         >
           {t.nombre}
           {t.activo && <span className="ml-1.5 text-xs opacity-70">· actual</span>}
-        </a>
+        </Link>
       ))}
     </nav>
   );
