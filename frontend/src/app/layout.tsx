@@ -6,7 +6,7 @@ const anton = Anton({ subsets: ["latin"], weight: "400", variable: "--font-anton
 const space = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-space" });
 
 export const metadata: Metadata = {
-  title: "Quiniela Liga MX",
+  title: "Quinieleros Pinola",
   description: "Predice los resultados de la Liga MX y compite con tus amigos",
 };
 

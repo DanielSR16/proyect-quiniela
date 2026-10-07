@@ -30,7 +30,7 @@ export function LoginForm() {
           <rect x="3" y="5" width="18" height="14" rx="2" />
           <path d="m3 7 9 6 9-6" />
         </svg>
-        <input id="correo" name="correo" type="email" required defaultValue={estado.correo} autoComplete="username" placeholder="Correo" className={entrada} />
+        <input suppressHydrationWarning id="correo" name="correo" type="email" required defaultValue={estado.correo} autoComplete="username" placeholder="Correo" className={entrada} />
       </div>
       <div className="relative">
         <label htmlFor="password" className="sr-only">Contraseña</label>
@@ -39,6 +39,7 @@ export function LoginForm() {
           <path d="M8 11V8a4 4 0 0 1 8 0v3" />
         </svg>
         <input
+          suppressHydrationWarning
           id="password"
           name="password"
           type={verPassword ? "text" : "password"}
