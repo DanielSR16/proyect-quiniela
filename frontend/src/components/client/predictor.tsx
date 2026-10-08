@@ -67,6 +67,14 @@ export function Predictor({
   const [estado, setEstado] = useState<"sin" | "guardado" | "editado">(inicial ? "guardado" : "sin");
   const [error, setError] = useState<string | null>(null);
   const [guardando, iniciarGuardado] = useTransition();
+  const [recien, setRecien] = useState(false);
+
+  // Resalta la confirmación unos segundos después de guardar.
+  useEffect(() => {
+    if (!recien) return;
+    const t = setTimeout(() => setRecien(false), 2500);
+    return () => clearTimeout(t);
+  }, [recien]);
 
   const [cerrado, setCerrado] = useState(false);
   useEffect(() => {
@@ -83,7 +91,11 @@ export function Predictor({
     <div className="fila">
       <div className="flex items-baseline justify-between gap-3 text-xs md:text-sm">
         <span className="text-muted first-letter:uppercase">{hora}</span>
-        <span className="uppercase tracking-widest text-muted">{cerrado ? "Pronóstico cerrado" : etiqueta}</span>
+        <span
+          className={`uppercase tracking-widest ${estado === "guardado" && !cerrado ? "font-bold text-forest-700" : estado === "editado" && !cerrado ? "font-bold text-gold-500" : "text-muted"}`}
+        >
+          {cerrado ? "Pronóstico cerrado" : estado === "guardado" ? `✓ ${etiqueta}` : etiqueta}
+        </span>
       </div>
 
       {/* Móvil: un equipo por renglón. Tablet/PC: local – visitante en una sola fila */}
@@ -102,20 +114,34 @@ export function Predictor({
       <button
         type="button"
         disabled={cerrado || !completo || estado === "guardado" || guardando}
+        aria-live="polite"
         onClick={() =>
           iniciarGuardado(async () => {
             const r = await guardarPrediccion(partidoId, golesLocal!, golesVisitante!);
             if (r.ok) {
               setError(null);
               setEstado("guardado");
+              setRecien(true);
             } else {
               setError(r.error);
             }
           })
         }
-        className="boton mt-3 w-full md:mt-4 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-forest-900"
+        className={`boton mt-3 w-full md:mt-4 disabled:cursor-not-allowed ${
+          estado === "guardado" && !cerrado
+            ? `disabled:opacity-100 ${recien ? "disabled:bg-gold-400 disabled:text-forest-900" : "disabled:bg-forest-700"}`
+            : "disabled:opacity-40 disabled:hover:bg-forest-900"
+        }`}
       >
-        {cerrado ? "Cerrado: el partido ya inició" : guardando ? "Guardando…" : estado === "guardado" ? "Guardado" : "Guardar pronóstico"}
+        {cerrado
+          ? "Cerrado: el partido ya inició"
+          : guardando
+            ? "Guardando…"
+            : estado === "guardado"
+              ? recien
+                ? "✓ ¡Pronóstico guardado!"
+                : "✓ Guardado"
+              : "Guardar pronóstico"}
       </button>
       {error && <p role="alert" className="mt-2 text-center text-sm font-bold text-error">{error}</p>}
     </div>

@@ -7,6 +7,7 @@ import type { Rol } from "@/lib/tipos";
 export interface Sesion {
   id: string;
   nombre: string;
+  apodo: string;
   rol: Rol;
 }
 
@@ -18,9 +19,9 @@ export const getSesion = cache(async (): Promise<Sesion | null> => {
   const id = data?.claims?.sub;
   if (!id) return null;
 
-  const { data: perfil } = await supabase.from("profiles").select("id, name, role").eq("id", id).maybeSingle();
+  const { data: perfil } = await supabase.from("profiles").select("id, name, nickname, role").eq("id", id).maybeSingle();
   if (!perfil) return null;
-  return { id: perfil.id, nombre: perfil.name, rol: perfil.role === "admin" ? "admin" : "player" };
+  return { id: perfil.id, nombre: perfil.name, apodo: perfil.nickname, rol: perfil.role === "admin" ? "admin" : "player" };
 });
 
 // Para páginas: sin acceso (sin sesión o bloqueado) cierra la sesión y vuelve al login.

@@ -10,6 +10,7 @@ import type { Resultado, Rol } from "@/lib/tipos";
 
 export interface DatosUsuario {
   nombre: string;
+  apodo: string;
   correo: string;
   rol: Rol;
   password?: string; // obligatoria al crear; al editar, vacía = no cambia
@@ -18,6 +19,7 @@ export interface DatosUsuario {
 function validar(d: DatosUsuario, creando: boolean): string | null {
   const nombre = d.nombre.trim();
   if (nombre.length < 1 || nombre.length > 60) return "Escribe el nombre (máximo 60 caracteres)";
+  if (!/^[^\s@]{3,30}$/.test(d.apodo.trim())) return "El apodo debe tener de 3 a 30 caracteres, sin espacios ni @";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.correo.trim())) return "Correo inválido";
   if (d.rol !== "admin" && d.rol !== "player") return "Rol inválido";
   if ((creando || d.password) && (d.password ?? "").length < 8) return "La contraseña debe tener al menos 8 caracteres";
@@ -27,8 +29,8 @@ function validar(d: DatosUsuario, creando: boolean): string | null {
 // Para comparar nombres sin importar mayúsculas con ilike sin que % o _ funcionen como comodines.
 const escaparLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
 
-async function nombreEnUso(nombre: string, exceptoId?: string): Promise<boolean> {
-  let consulta = createAdminClient().from("profiles").select("id").ilike("name", escaparLike(nombre)).limit(1);
+async function enUso(columna: "name" | "nickname", valor: string, exceptoId?: string): Promise<boolean> {
+  let consulta = createAdminClient().from("profiles").select("id").ilike(columna, escaparLike(valor)).limit(1);
   if (exceptoId) consulta = consulta.neq("id", exceptoId);
   const { data } = await consulta;
   return !!data?.length;
@@ -38,14 +40,16 @@ export async function crearUsuario(d: DatosUsuario): Promise<Resultado> {
   const error = (await errorSiNoAdmin()) ?? validar(d, true);
   if (error) return { ok: false, error };
   const nombre = d.nombre.trim();
-  if (await nombreEnUso(nombre)) return { ok: false, error: "Ya existe un usuario con ese nombre" };
+  const apodo = d.apodo.trim();
+  if (await enUso("name", nombre)) return { ok: false, error: "Ya existe un usuario con ese nombre" };
+  if (await enUso("nickname", apodo)) return { ok: false, error: "Ese apodo ya lo usa otro usuario" };
 
   const admin = createAdminClient();
   const { data, error: fallo } = await admin.auth.admin.createUser({
     email: d.correo.trim(),
     password: d.password,
     email_confirm: true,
-    user_metadata: { name: nombre },
+    user_metadata: { name: nombre, nickname: apodo },
   });
   if (fallo || !data.user) {
     const repetido = fallo?.code === "email_exists" || fallo?.message.toLowerCase().includes("already");
@@ -66,11 +70,13 @@ export async function editarUsuario(id: string, d: DatosUsuario): Promise<Result
   const error = (await errorSiNoAdmin()) ?? validar(d, false);
   if (error) return { ok: false, error };
   const nombre = d.nombre.trim();
-  if (await nombreEnUso(nombre, id)) return { ok: false, error: "Ya existe un usuario con ese nombre" };
+  const apodo = d.apodo.trim();
+  if (await enUso("name", nombre, id)) return { ok: false, error: "Ya existe un usuario con ese nombre" };
+  if (await enUso("nickname", apodo, id)) return { ok: false, error: "Ese apodo ya lo usa otro usuario" };
 
   const admin = createAdminClient();
   // Un trigger rechaza degradar al último admin activo ("Debe quedar al menos un administrador activo").
-  const { data, error: fallo } = await admin.from("profiles").update({ name: nombre, role: d.rol }).eq("id", id).select("id");
+  const { data, error: fallo } = await admin.from("profiles").update({ name: nombre, nickname: apodo, role: d.rol }).eq("id", id).select("id");
   if (fallo) return { ok: false, error: fallo.code === "P0001" ? fallo.message : "No se pudo guardar el usuario" };
   if (!data?.length) return { ok: false, error: "Ese usuario no existe" };
 

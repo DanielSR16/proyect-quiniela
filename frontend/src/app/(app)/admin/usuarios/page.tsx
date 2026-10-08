@@ -8,7 +8,7 @@ export default async function UsuariosPage() {
 
   const admin = createAdminClient();
   const [perfiles, cuentas] = await Promise.all([
-    admin.from("profiles").select("id, name, role, blocked"),
+    admin.from("profiles").select("id, name, nickname, role, blocked"),
     admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ]);
   if (perfiles.error) throw new Error(perfiles.error.message);
@@ -19,6 +19,7 @@ export default async function UsuariosPage() {
     .map((p) => ({
       id: p.id,
       nombre: p.name,
+      apodo: p.nickname,
       correo: correos.get(p.id) ?? "",
       rol: (p.role === "admin" ? "admin" : "player") as Usuario["rol"],
       bloqueado: p.blocked,
