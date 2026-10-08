@@ -11,7 +11,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <Cabecera conSalir>
         <Nav esAdmin={sesion.rol === "admin"} />
       </Cabecera>
-      <main className="mx-auto max-w-4xl px-5 pb-28 pt-8 sm:pb-12">{children}</main>
+      <main className="mx-auto max-w-4xl min-h-dvh px-5 pb-32 pt-8 sm:pb-12">{children}</main>
     </>
   );
 }

@@ -37,6 +37,7 @@ export interface Jugador {
 export interface Usuario {
   id: string;
   nombre: string;
+  apodo: string;
   correo: string;
   rol: Rol;
   bloqueado: boolean;

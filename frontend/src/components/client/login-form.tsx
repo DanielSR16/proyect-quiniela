@@ -25,12 +25,12 @@ export function LoginForm() {
   return (
     <form action={accion} className="space-y-4">
       <div className="relative">
-        <label htmlFor="correo" className="sr-only">Correo</label>
+        <label htmlFor="correo" className="sr-only">Apodo o correo</label>
         <svg {...icono} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-cream/50">
           <rect x="3" y="5" width="18" height="14" rx="2" />
           <path d="m3 7 9 6 9-6" />
         </svg>
-        <input suppressHydrationWarning id="correo" name="correo" type="email" required defaultValue={estado.correo} autoComplete="username" placeholder="Correo" className={entrada} />
+        <input suppressHydrationWarning id="correo" name="correo" type="text" required defaultValue={estado.correo} autoComplete="username" placeholder="Apodo o correo" autoCapitalize="none" autoCorrect="off" className={entrada} />
       </div>
       <div className="relative">
         <label htmlFor="password" className="sr-only">Contraseña</label>

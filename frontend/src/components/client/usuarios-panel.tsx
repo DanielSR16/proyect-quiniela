@@ -38,6 +38,7 @@ function FormularioUsuario({
   esNuevo?: boolean;
 }) {
   const [nombre, setNombre] = useState(inicial.nombre);
+  const [apodo, setApodo] = useState(inicial.apodo);
   const [correo, setCorreo] = useState(inicial.correo);
   const [rol, setRol] = useState<Rol>(inicial.rol);
   const [contrasena, setContrasena] = useState("");
@@ -52,13 +53,17 @@ function FormularioUsuario({
       onSubmit={(e) => {
         e.preventDefault();
         iniciarEnvio(async () => {
-          setError(await onGuardar({ ...inicial, nombre: nombre.trim(), correo: correo.trim(), rol }, contrasena));
+          setError(await onGuardar({ ...inicial, nombre: nombre.trim(), apodo: apodo.trim(), correo: correo.trim(), rol }, contrasena));
         });
       }}
     >
       <div>
         <label htmlFor={`${id}-nombre`} className="mb-1.5 block font-bold">Nombre</label>
         <input id={`${id}-nombre`} required value={nombre} onChange={(e) => setNombre(e.target.value)} className="campo" />
+      </div>
+      <div>
+        <label htmlFor={`${id}-apodo`} className="mb-1.5 block font-bold">Apodo (para iniciar sesión)</label>
+        <input id={`${id}-apodo`} required minLength={3} maxLength={30} pattern="[^\s@]{3,30}" title="De 3 a 30 caracteres, sin espacios ni @" autoCapitalize="none" value={apodo} onChange={(e) => setApodo(e.target.value)} className="campo" />
       </div>
       <div>
         <label htmlFor={`${id}-correo`} className="mb-1.5 block font-bold">Correo</label>
@@ -130,7 +135,7 @@ export function UsuariosPanel({ usuarios }: { usuarios: Usuario[] }) {
   }, [exito]);
 
   const guardar: Guardar = async (u, contrasena) => {
-    const r = await editarUsuario(u.id, { nombre: u.nombre, correo: u.correo, rol: u.rol, password: contrasena });
+    const r = await editarUsuario(u.id, { nombre: u.nombre, apodo: u.apodo, correo: u.correo, rol: u.rol, password: contrasena });
     if (r.ok) {
       setEditando(null);
       setExito(`Cambios guardados: ${u.nombre}`);
@@ -139,7 +144,7 @@ export function UsuariosPanel({ usuarios }: { usuarios: Usuario[] }) {
   };
 
   const agregar: Guardar = async (u, contrasena) => {
-    const r = await crearUsuario({ nombre: u.nombre, correo: u.correo, rol: u.rol, password: contrasena });
+    const r = await crearUsuario({ nombre: u.nombre, apodo: u.apodo, correo: u.correo, rol: u.rol, password: contrasena });
     if (r.ok) {
       setAgregando(false);
       setExito(`Usuario creado: ${u.nombre}`);
@@ -176,7 +181,7 @@ export function UsuariosPanel({ usuarios }: { usuarios: Usuario[] }) {
         <div className="fila">
           <p className="etiqueta !font-sans mb-3">Nuevo usuario</p>
           <FormularioUsuario
-            inicial={{ id: "", nombre: "", correo: "", rol: "player", bloqueado: false }}
+            inicial={{ id: "", nombre: "", apodo: "", correo: "", rol: "player", bloqueado: false }}
             textoEnvio="Agregar usuario"
             esNuevo
             onGuardar={agregar}
@@ -198,7 +203,7 @@ export function UsuariosPanel({ usuarios }: { usuarios: Usuario[] }) {
                   {u.nombre} <EtiquetaRol rol={u.rol} />
                   {u.bloqueado && <span className="inline-block bg-error px-2 py-0.5 text-xs uppercase tracking-widest text-cream">Bloqueado</span>}
                 </p>
-                <p className="truncate text-sm text-muted">{u.correo}</p>
+                <p className="truncate text-sm text-muted">@{u.apodo} · {u.correo}</p>
               </div>
               {bloqueando !== u.id && (
                 <div className="flex shrink-0 gap-4 text-sm">

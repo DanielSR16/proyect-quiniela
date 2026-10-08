@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const iconProps = {
   width: 22,
@@ -59,8 +60,51 @@ const enlaces = [
   },
 ];
 
+const enlaceCuenta = {
+  href: "/cuenta",
+  label: "Mi cuenta",
+  corto: "Cuenta",
+  icono: (
+    <svg {...iconProps}>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+    </svg>
+  ),
+};
+
 export function Nav({ esAdmin }: { esAdmin: boolean }) {
   const ruta = usePathname();
+  // Con el teclado abierto la barra se esconde: flotaba encima del teclado y tapaba los campos.
+  // Se detecta por el tamaño visible de la pantalla (no por el foco: en el celular un campo puede seguir
+  // enfocado con el teclado cerrado, y la barra se quedaba escondida).
+  const [escribiendo, setEscribiendo] = useState(false);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    let base = vv.height;
+    const revisar = () => {
+      if (vv.height > base) base = vv.height;
+      setEscribiendo(base - vv.height > 150);
+    };
+    const girar = () => {
+      base = vv.height;
+      revisar();
+    };
+    // Tocar fuera de un campo cierra el teclado.
+    const fuera = (e: Event) => {
+      const el = document.activeElement;
+      if (el instanceof HTMLElement && el !== e.target && !el.contains(e.target as Node) && el.matches("input, textarea, select")) el.blur();
+    };
+    vv.addEventListener("resize", revisar);
+    window.addEventListener("orientationchange", girar);
+    document.addEventListener("pointerdown", fuera);
+    return () => {
+      vv.removeEventListener("resize", revisar);
+      window.removeEventListener("orientationchange", girar);
+      document.removeEventListener("pointerdown", fuera);
+    };
+  }, []);
+
   const visibles = enlaces.filter((e) => e.href !== "/admin" || esAdmin);
 
   return (
@@ -68,7 +112,7 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
       {/* Tablet y PC: pestañas en la cabecera */}
       <nav
         aria-label="Principal"
-        className="hidden w-full items-center gap-1 rounded-full border border-cream/20 bg-forest-800 p-1 text-sm sm:flex lg:ml-auto lg:w-auto"
+        className="hidden w-full items-center gap-1 rounded-full border border-cream/20 bg-forest-800 p-1 text-sm sm:flex lg:order-3"
       >
         {visibles.map((e) => {
           const activo = ruta.startsWith(e.href);
@@ -77,7 +121,7 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
               key={e.href}
               href={e.href}
               aria-current={activo ? "page" : undefined}
-              className={`flex-1 rounded-full px-4 py-2 text-center transition-colors lg:flex-none ${
+              className={`flex-1 rounded-full px-4 py-2 text-center transition-colors ${
                 activo
                   ? "bg-gold-400 font-bold text-forest-900"
                   : "text-cream hover:bg-forest-700 hover:text-gold-400"
@@ -92,17 +136,19 @@ export function Nav({ esAdmin }: { esAdmin: boolean }) {
       {/* Móvil: barra inferior tipo app */}
       <nav
         aria-label="Principal"
-        className="fixed inset-x-0 bottom-0 z-50 border-t-2 border-gold-400/60 bg-forest-900 pb-[env(safe-area-inset-bottom)] sm:hidden"
+        className={`fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-md transform-gpu rounded-2xl border border-gold-400/60 bg-forest-900 shadow-lg shadow-black/30 transition-transform duration-200 sm:hidden ${
+          escribiendo ? "translate-y-[200%]" : ""
+        }`}
       >
         <ul className="mx-auto flex max-w-md">
-          {visibles.map((e) => {
+          {[...visibles, enlaceCuenta].map((e) => {
             const activo = ruta.startsWith(e.href);
             return (
               <li key={e.href} className="flex-1">
                 <Link
                   href={e.href}
                   aria-current={activo ? "page" : undefined}
-                  className={`flex flex-col items-center gap-1 px-1 pb-2 pt-2.5 text-[11px] leading-none ${
+                  className={`flex flex-col items-center gap-1 px-1 pb-2 pt-2 text-[11px] leading-none ${
                     activo ? "text-gold-400" : "text-cream/70"
                   }`}
                 >

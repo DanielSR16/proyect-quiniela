@@ -129,6 +129,7 @@ export type Database = {
           created_at: string;
           id: string;
           name: string;
+          nickname: string;
           role: string;
         };
         Insert: {
@@ -136,6 +137,7 @@ export type Database = {
           created_at?: string;
           id: string;
           name: string;
+          nickname: string;
           role?: string;
         };
         Update: {
@@ -143,6 +145,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           name?: string;
+          nickname?: string;
           role?: string;
         };
         Relationships: [];
